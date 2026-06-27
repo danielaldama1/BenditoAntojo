@@ -59,26 +59,77 @@ const PRECIO_RELLENO_GORDITAS    = 5; // se cobra desde el 1er relleno
 // MENÚ DEFAULT
 // ══════════════════════════════════════════════════════
 const MENU_DEFAULT = {
-  "Chilaquiles":  { icon:"🍳", color:"#E85D04", categoria:"comida", precio:55,  variantes:["Verdes","Rojos"], rellenos:["Pollo","Suadero","Campechanos","Huevo"], extras:["Cebolla","Crema","Queso","Extra Queso +$5"], multiRelleno:true },
-  "Enchiladas":   { icon:"🌯", color:"#C1121F", categoria:"comida", precio:55,  variantes:["Sencillas","Pollo","Suadero","Otro"], extras:["Crema","Cebolla","Cilantro","Lechuga","Extra Queso +$5"] },
-  "Tacos":        { icon:"🌮", color:"#F48C06", categoria:"comida", precio:30,  variantes:["Suadero","Longaniza","Campechanos","Mixtos"], extras:["Nopales","Papas","Cebolla","Cilantro","Extra Queso +$5"], unidad:"c/u" },
-  "Pambazos":     { icon:"🥙", color:"#DC2F02", categoria:"comida", precio:30,  variantes:["Chicharrón","Queso","Tinga","Papa con Longaniza","Hongos","Suadero"], extras:["Lechuga","Crema","Queso","Extra Queso +$5"] },
-  "Quesadillas":  { icon:"🫓", color:"#9D4EDD", categoria:"comida", precio:30,  variantes:["Chicharrón","Queso","Tinga","Papa con Longaniza","Hongos","Suadero"], extras:["Lechuga","Crema","Queso","Extra Queso +$5"] },
-  "Huaraches":    { icon:"🫔", color:"#3A86FF", categoria:"comida", precio:40,  variantes:["Suadero","Longaniza","Campechanos","Otro"], extras:["Cebolla","Lechuga","Queso","Guacamole","Extra Queso +$5"] },
-  "Gorditas":     { icon:"🫔", color:"#06D6A0", categoria:"comida", precio:25,  variantes:["Suadero","Longaniza","Chicharrón","Queso","Otro"], extras:["Cilantro","Cebolla","Queso","Extra Queso +$5"] },
-  "Pancita":      { icon:"🫕", color:"#8B1A1A", categoria:"comida", variantes:["Grande","Chica"], precios:{"Grande":110,"Chica":85} },
-  "Pozole":       { icon:"🍲", color:"#9B2226", categoria:"comida", variantes:["Grande","Chico"], precios:{"Grande":110,"Chico":85} },
-  "Pan de Dulce": { icon:"🍩", color:"#C77DFF", categoria:"comida", precio:12 },
-  "Pan Blanco":   { icon:"🍞", color:"#F5CBA7", categoria:"comida", precio:5  },
-  "Agua":         { icon:"💧", color:"#00B4D8", categoria:"bebida", variantes:["1/2 L","1 L"], sabores:["Horchata","Jamaica","Limón","Tamarindo"], precios:{"1/2 L":25,"1 L":35} },
-  "Café":         { icon:"☕", color:"#6F4E37", categoria:"bebida", variantes:["1/4 L","1/2 L","1 L"], extras:["Con leche","Sin azúcar","Con piloncillo"], precios:{"1/4 L":20,"1/2 L":37,"1 L":70} },
-  "Atole":        { icon:"🥛", color:"#F4A261", categoria:"bebida", variantes:["1/4 L","1/2 L","1 L"], sabores:["Chocolate","Guayaba","Fresa","Vainilla"], precios:{"1/4 L":25,"1/2 L":45,"1 L":85} },
-  "Refresco":     { icon:"🥤", color:"#EF233C", categoria:"bebida", variantes:["Coca-Cola","Boing","Otro"], precios:{"Coca-Cola":25,"Boing":25,"Otro":25} },
-  "Limonada":     { icon:"🍋", color:"#F9C74F", categoria:"bebida", variantes:["Natural 1/2 L","Natural 1 L","Mineral 1/2 L","Mineral 1 L"], precios:{"Natural 1/2 L":35,"Natural 1 L":75,"Mineral 1/2 L":35,"Mineral 1 L":75} },
-  "Michelada":    { icon:"🍺", color:"#FFBA08", categoria:"bebida", variantes:["Corona 1/2 L","Corona 1 L","Victoria 1/2 L","Victoria 1 L"], extras:["Clamato","Naranja","Tamarindo","Limón","Salsas","Todo","Solo Limón y Sal"], precios:{"Corona 1/2 L":45,"Corona 1 L":90,"Victoria 1/2 L":45,"Victoria 1 L":90} },
-  "Mojito":       { icon:"🍹", color:"#40916C", categoria:"bebida", variantes:["Limón 1/2 L","Limón 1 L","Fresa 1/2 L","Fresa 1 L","Frutos Rojos 1/2 L","Frutos Rojos 1 L"], extras:["Escarchado","Doble"], precios:{"Limón 1/2 L":60,"Limón 1 L":100,"Fresa 1/2 L":60,"Fresa 1 L":100,"Frutos Rojos 1/2 L":70,"Frutos Rojos 1 L":120} },
-  "Caguama":      { icon:"🍻", color:"#B5830A", categoria:"bebida", variantes:["Corona","Victoria"], precios:{"Corona":55,"Victoria":55} },
-  "Vasos":        { icon:"🥛", color:"#ADB5BD", categoria:"bebida", precio:1 },
+  "Chilaquiles": {
+    icon:"🍳", color:"#E85D04", categoria:"comida", precio:60,
+    variantes:["Verdes","Rojos"],
+    rellenos:["Pollo","Suadero","Campechanos","Huevo"],
+    extras:["Cebolla","Crema","Queso","Extra Queso +$5"],
+    multiRelleno: true
+  },
+  "Tacos": {
+    icon:"🌮", color:"#F48C06", categoria:"comida", precio:35, unidad:"c/u",
+    variantes:["Suadero","Longaniza","Campechanos"],
+    extras:["Nopales","Cebolla","Cilantro","Extra Queso +$5"]
+  },
+  "Pambazos": {
+    icon:"🥙", color:"#DC2F02", categoria:"comida", precio:35,
+    variantes:["Chicharrón","Queso","Tinga","Papa con Longaniza","Hongos","Suadero"],
+    extras:["Lechuga","Crema","Queso","Extra Queso +$5"]
+  },
+  "Quesadillas": {
+    icon:"🫓", color:"#9D4EDD", categoria:"comida", precio:35,
+    variantes:["Chicharrón","Queso","Tinga","Papa con Longaniza","Hongos","Suadero"],
+    extras:["Lechuga","Crema","Queso","Extra Queso +$5"]
+  },
+  "Pan de Dulce": {
+    icon:"🍩", color:"#C77DFF", categoria:"comida", precio:15
+  },
+  "Pan Blanco": {
+    icon:"🍞", color:"#F5CBA7", categoria:"comida", precio:5
+  },
+  "Agua": {
+    icon:"💧", color:"#00B4D8", categoria:"bebida",
+    variantes:["1/2 L","1 L"],
+    sabores:["Horchata","Jamaica","Limón","Tamarindo"],
+    precios:{"1/2 L":30,"1 L":40}
+  },
+  "Café": {
+    icon:"☕", color:"#6F4E37", categoria:"bebida",
+    variantes:["1/4 L","1/2 L","1 L"],
+    extras:["Con leche","Sin azúcar","Con piloncillo"],
+    precios:{"1/4 L":25,"1/2 L":40,"1 L":80}
+  },
+  "Refresco": {
+    icon:"🥤", color:"#EF233C", categoria:"bebida",
+    variantes:["Coca-Cola","Boing","Otro"],
+    precios:{"Coca-Cola":30,"Boing":30,"Otro":30}
+  },
+  "Limonada": {
+    icon:"🍋", color:"#F9C74F", categoria:"bebida",
+    variantes:["Natural 1/2 L","Natural 1 L","Mineral 1/2 L","Mineral 1 L"],
+    precios:{"Natural 1/2 L":40,"Natural 1 L":75,"Mineral 1/2 L":40,"Mineral 1 L":75}
+  },
+  "Michelada": {
+    icon:"🍺", color:"#FFBA08", categoria:"bebida",
+    variantes:["Corona 1/2 L","Corona 1 L","Victoria 1/2 L","Victoria 1 L"],
+    extras:["Clamato","Naranja","Tamarindo","Limón","Salsas","Todo","Solo Limón y Sal"],
+    precios:{"Corona 1/2 L":55,"Corona 1 L":100,"Victoria 1/2 L":55,"Victoria 1 L":100}
+  },
+  "Mojito": {
+    icon:"🍹", color:"#40916C", categoria:"bebida",
+    variantes:["Limón 1/2 L","Limón 1 L","Fresa 1/2 L","Fresa 1 L","Frutos Rojos 1/2 L","Frutos Rojos 1 L"],
+    extras:["Escarchado","Doble"],
+    precios:{"Limón 1/2 L":65,"Limón 1 L":110,"Fresa 1/2 L":65,"Fresa 1 L":110,"Frutos Rojos 1/2 L":70,"Frutos Rojos 1 L":125}
+  },
+  "Caguama": {
+    icon:"🍻", color:"#B5830A", categoria:"bebida",
+    variantes:["Corona","Victoria"],
+    precios:{"Corona":60,"Victoria":60}
+  },
+  "Vasos": {
+    icon:"🥛", color:"#ADB5BD", categoria:"bebida",
+    precio:1
+  },
 };
 
 // ══════════════════════════════════════════════════════
@@ -920,7 +971,7 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                     <span style={{fontWeight:800,fontSize:16}}>#{p.idDia || String(p.ts||"").slice(-4)}</span>
                     <span style={{fontSize:15}}> — {p.mesa||"Sin mesa"}</span><br/>
                     <span style={{color:"#aaa",fontSize:14}}>{p.hora}{p.actualizado?` · act. ${p.actualizado}`:""} · {fmt(p.total)}</span><br/>
-                    {p.mesero && <span style={{color:"#9D4EDD",fontSize:14}}>👤 {p.mesero}{p.tipoServicio ? ` · ${p.tipoServicio==="llevar"?"🥡 Para llevar":"🍽️ En sitio"}` : ""}</span>}
+                    {p.mesero && <span style={{color:"#FFBA08",fontSize:14}}>👤 {p.mesero}{p.tipoServicio ? ` · ${p.tipoServicio==="llevar"?"🥡 Para llevar":"🍽️ En sitio"}` : ""}</span>}
                   </div>
 
                   <div style={S.itemsList}>
@@ -1261,6 +1312,70 @@ function Reportes({ pedidos }) {
 // ══════════════════════════════════════════════════════
 // ADMIN — CRUD de menú + gestión de usuarios
 // ══════════════════════════════════════════════════════
+
+// ── CHIP EDITOR ───────────────────────────────────────
+function ChipEditor({ value, onChange, placeholder }) {
+  const chips = value ? value.split(",").map(s=>s.trim()).filter(Boolean) : [];
+  const [inp, setInp] = React.useState("");
+  const add = () => {
+    const v = inp.trim(); if(!v) return;
+    onChange([...chips,v].join(", ")); setInp("");
+  };
+  return (
+    <div>
+      <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}}>
+        {chips.map((c,i)=>(
+          <span key={i} style={{background:"#333",color:"#fff",borderRadius:20,padding:"4px 10px",fontSize:12,display:"flex",alignItems:"center",gap:6}}>
+            {c}
+            <button onClick={()=>onChange(chips.filter((_,j)=>j!==i).join(", "))}
+              style={{background:"none",border:"none",color:"#aaa",cursor:"pointer",fontSize:14,lineHeight:1,padding:0}}>×</button>
+          </span>
+        ))}
+      </div>
+      <div style={{display:"flex",gap:6}}>
+        <input style={{flex:1,background:"#111",border:"1px solid #333",color:"#fff",borderRadius:8,padding:"8px 12px",fontSize:13}}
+          placeholder={placeholder} value={inp}
+          onChange={e=>setInp(e.target.value)}
+          onKeyDown={e=>{ if(e.key==="Enter"||e.key===","){e.preventDefault();add();} }}/>
+        <button onClick={add}
+          style={{background:"#E85D04",border:"none",color:"#fff",borderRadius:8,padding:"8px 14px",fontWeight:700,cursor:"pointer",fontSize:13}}>+</button>
+      </div>
+    </div>
+  );
+}
+
+function VariantePrecioEditor({ value, onChange }) {
+  const [nom, setNom] = React.useState("");
+  const [pre, setPre] = React.useState("");
+  const add = () => {
+    if(!nom.trim()||!pre) return;
+    onChange([...value,{nombre:nom.trim(),precio:Number(pre)}]);
+    setNom(""); setPre("");
+  };
+  return (
+    <div>
+      <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:10}}>
+        {value.map((vp,i)=>(
+          <div key={i} style={{display:"flex",alignItems:"center",gap:8,background:"#333",borderRadius:8,padding:"6px 10px"}}>
+            <span style={{flex:1,fontSize:13}}>{vp.nombre}</span>
+            <span style={{color:"#E85D04",fontWeight:700,fontSize:13}}>${vp.precio}</span>
+            <button onClick={()=>onChange(value.filter((_,j)=>j!==i))}
+              style={{background:"none",border:"none",color:"#aaa",cursor:"pointer",fontSize:16,padding:0}}>×</button>
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex",gap:6}}>
+        <input style={{flex:2,background:"#111",border:"1px solid #333",color:"#fff",borderRadius:8,padding:"8px 10px",fontSize:13}}
+          placeholder="Ej: Plato Grande" value={nom} onChange={e=>setNom(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()}/>
+        <input type="number" style={{flex:1,background:"#111",border:"1px solid #333",color:"#fff",borderRadius:8,padding:"8px 10px",fontSize:13}}
+          placeholder="Precio" value={pre} onChange={e=>setPre(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()}/>
+        <button onClick={add}
+          style={{background:"#E85D04",border:"none",color:"#fff",borderRadius:8,padding:"8px 14px",fontWeight:700,cursor:"pointer",fontSize:13}}>+</button>
+      </div>
+    </div>
+  );
+}
+
 function AdminView({ menu, onUpdate }) {
   const [seccion,  setSeccion]  = useState("menu");   // "menu" | "usuarios"
   const [tab,      setTab]      = useState("lista");
@@ -1330,25 +1445,32 @@ function AdminView({ menu, onUpdate }) {
 
   const guardar = () => {
     const n = form.nombre.trim();
-    if (!n) { alert("El nombre es obligatorio"); return; }
-    const split = s => s.split(",").map(x=>x.trim()).filter(Boolean);
-    let precios = null;
-    if (form.preciosRaw.trim()) {
-      try { precios = JSON.parse(form.preciosRaw); } catch { alert("Formato de precios inválido (JSON)"); return; }
+    if (!n) { alert("El nombre del producto es obligatorio"); return; }
+    const split = s => s ? s.split(",").map(x=>x.trim()).filter(Boolean) : [];
+    let precio=null, precios=null, variantes=null;
+    if (form.tipoPrecio==="variante") {
+      if (!form.variantesPrecios||form.variantesPrecios.length===0) { alert("Agrega al menos una opción con precio"); return; }
+      precios={}; variantes=[];
+      form.variantesPrecios.forEach(vp=>{ precios[vp.nombre]=vp.precio; variantes.push(vp.nombre); });
+    } else {
+      if (!form.precio) { alert("El precio es obligatorio"); return; }
+      precio = Number(form.precio);
     }
+    const extrasBase = split(form.extras);
+    const extrasF = form.conExtraQueso&&form.categoria==="comida" ? [...extrasBase,"Extra Queso +$5"] : extrasBase;
     const prod = {
       icon:form.icon||"🍽️", color:form.color||"#E85D04", categoria:form.categoria||"comida",
-      ...(form.precio?{precio:Number(form.precio)}:{}),
+      ...(precio!==null?{precio}:{}),
       ...(form.unidad?{unidad:form.unidad}:{}),
-      ...(split(form.variantes).length?{variantes:split(form.variantes)}:{}),
-      ...(split(form.rellenos).length ?{rellenos:split(form.rellenos)}:{}),
-      ...(split(form.sabores).length  ?{sabores:split(form.sabores)}:{}),
-      ...(split(form.extras).length   ?{extras:split(form.extras)}:{}),
+      ...(variantes&&variantes.length?{variantes}:{}),
+      ...(split(form.rellenos).length?{rellenos:split(form.rellenos)}:{}),
+      ...(split(form.sabores).length?{sabores:split(form.sabores)}:{}),
+      ...(extrasF.length?{extras:extrasF}:{}),
       ...(precios?{precios}:{}),
     };
     const nuevo = {...menu};
     if (editando && editando!==n) delete nuevo[editando];
-    nuevo[n] = prod; onUpdate(nuevo); setTab("lista");
+    nuevo[n]=prod; onUpdate(nuevo); setTab("lista"); setForm(formVacio()); setEditando(null);
   };
 
   const inp = (campo, placeholder, tipo="text") => (
@@ -1398,38 +1520,84 @@ function AdminView({ menu, onUpdate }) {
 
       {tab==="nuevo" && (
         <div style={{maxWidth:500}}>
-          <h4 style={{color:"#ccc",marginTop:0}}>{editando?"Editando: "+editando:"Nuevo producto"}</h4>
-          <div style={SA.grupo}><label style={SA.lbl}>Nombre *</label>{inp("nombre","Ej: Tlayuda")}</div>
-          <div style={{display:"flex",gap:10}}>
-            <div style={{...SA.grupo,flex:1}}><label style={SA.lbl}>Ícono</label>{inp("icon","🍽️")}</div>
-            <div style={{...SA.grupo,flex:1}}><label style={SA.lbl}>Color</label>
-              <input type="color" value={form.color||"#E85D04"} onChange={e=>setForm(p=>({...p,color:e.target.value}))}
-                style={{width:"100%",height:42,borderRadius:8,border:"none",cursor:"pointer",background:"none"}}/>
+          <h4 style={{color:"#ccc",marginTop:0,marginBottom:16}}>{editando?"✏️ Editando: "+editando:"✨ Nuevo producto"}</h4>
+
+          <div style={SA.bloque}>
+            <div style={SA.bloqueTitle}>1. Información básica</div>
+            <div style={SA.grupo}><label style={SA.lbl}>Nombre *</label>{inp("nombre","Ej: Tlayuda, Pozole…")}</div>
+            <div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
+              <div style={{...SA.grupo,flex:1,marginBottom:0}}>
+                <label style={SA.lbl}>Categoría</label>
+                <select style={SA.inp} value={form.categoria} onChange={e=>setForm(p=>({...p,categoria:e.target.value}))}>
+                  <option value="comida">🍽️ Comida</option>
+                  <option value="bebida">🥤 Bebida</option>
+                </select>
+              </div>
+              <div style={{...SA.grupo,flex:1,marginBottom:0}}>
+                <label style={SA.lbl}>Ícono (emoji)</label>{inp("icon","🍽️")}
+              </div>
+              <div style={{...SA.grupo,marginBottom:0}}>
+                <label style={SA.lbl}>Color</label>
+                <input type="color" value={form.color||"#E85D04"}
+                  onChange={e=>setForm(p=>({...p,color:e.target.value}))}
+                  style={{width:48,height:42,borderRadius:8,border:"none",cursor:"pointer",display:"block"}}/>
+              </div>
             </div>
           </div>
-          <div style={SA.grupo}>
-            <label style={SA.lbl}>Categoría</label>
-            <select style={SA.inp} value={form.categoria} onChange={e=>setForm(p=>({...p,categoria:e.target.value}))}>
-              <option value="comida">Comida</option>
-              <option value="bebida">Bebida</option>
-            </select>
+
+          <div style={SA.bloque}>
+            <div style={SA.bloqueTitle}>2. Precio</div>
+            <div style={{display:"flex",gap:8,marginBottom:12}}>
+              <button style={{...SA.chipOpt,...(form.tipoPrecio!=="variante"?SA.chipOptOn:{})}}
+                onClick={()=>setForm(p=>({...p,tipoPrecio:"fijo"}))}>{"💲 Precio fijo"}</button>
+              <button style={{...SA.chipOpt,...(form.tipoPrecio==="variante"?SA.chipOptOn:{})}}
+                onClick={()=>setForm(p=>({...p,tipoPrecio:"variante"}))}>{"📊 Por tamaño/tipo"}</button>
+            </div>
+            {form.tipoPrecio!=="variante" ? (
+              <div style={{display:"flex",gap:10}}>
+                <div style={{...SA.grupo,flex:2,marginBottom:0}}>
+                  <label style={SA.lbl}>{"Precio ($) *"}</label>{inp("precio","Ej: 55","number")}
+                </div>
+                <div style={{...SA.grupo,flex:1,marginBottom:0}}>
+                  <label style={SA.lbl}>Unidad</label>{inp("unidad","c/u")}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div style={{color:"#888",fontSize:12,marginBottom:8}}>Escribe el nombre y precio de cada opción:</div>
+                <VariantePrecioEditor
+                  value={form.variantesPrecios||[]}
+                  onChange={vp=>setForm(p=>({...p,variantesPrecios:vp}))}/>
+              </div>
+            )}
           </div>
-          <div style={{display:"flex",gap:10}}>
-            <div style={{...SA.grupo,flex:2}}><label style={SA.lbl}>Precio fijo ($)</label>{inp("precio","Ej: 55","number")}</div>
-            <div style={{...SA.grupo,flex:1}}><label style={SA.lbl}>Unidad</label>{inp("unidad","c/u")}</div>
+
+          <div style={SA.bloque}>
+            <div style={SA.bloqueTitle}>{"3. Opciones "}<span style={{color:"#666",fontWeight:400,fontSize:12}}>(opcionales)</span></div>
+            <div style={SA.grupo}>
+              <label style={SA.lbl}>Rellenos</label>
+              <ChipEditor value={form.rellenos||""} onChange={v=>setForm(p=>({...p,rellenos:v}))} placeholder="Escribe y presiona Enter o +"/>
+            </div>
+            <div style={SA.grupo}>
+              <label style={SA.lbl}>Sabores</label>
+              <ChipEditor value={form.sabores||""} onChange={v=>setForm(p=>({...p,sabores:v}))} placeholder="Escribe y presiona Enter o +"/>
+            </div>
+            <div style={{...SA.grupo,marginBottom:0}}>
+              <label style={SA.lbl}>Extras</label>
+              <ChipEditor value={form.extras||""} onChange={v=>setForm(p=>({...p,extras:v}))} placeholder="Escribe y presiona Enter o +"/>
+              {form.categoria==="comida" && (
+                <label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer",fontSize:13,color:"#aaa",marginTop:8}}>
+                  <input type="checkbox" checked={form.conExtraQueso||false}
+                    onChange={e=>setForm(p=>({...p,conExtraQueso:e.target.checked}))}
+                    style={{width:16,height:16}}/>
+                  {"Incluir Extra Queso +$5"}
+                </label>
+              )}
+            </div>
           </div>
-          <div style={SA.grupo}><label style={SA.lbl}>Variantes <span style={{color:"#666",fontWeight:400}}>(separadas por coma)</span></label>{inp("variantes","Ej: Verdes, Rojos")}</div>
-          <div style={SA.grupo}><label style={SA.lbl}>Rellenos <span style={{color:"#666",fontWeight:400}}>(separadas por coma)</span></label>{inp("rellenos","Ej: Pollo, Suadero")}</div>
-          <div style={SA.grupo}><label style={SA.lbl}>Sabores <span style={{color:"#666",fontWeight:400}}>(separadas por coma)</span></label>{inp("sabores","Ej: Chocolate, Fresa")}</div>
-          <div style={SA.grupo}><label style={SA.lbl}>Extras <span style={{color:"#666",fontWeight:400}}>(separadas por coma)</span></label>{inp("extras","Ej: Crema, Cebolla, Extra Queso +$5")}</div>
-          <div style={SA.grupo}>
-            <label style={SA.lbl}>Precios por variante <span style={{color:"#666",fontWeight:400}}>(JSON, opcional)</span></label>
-            <textarea style={{...SA.inp,height:90,resize:"vertical",fontFamily:"monospace",fontSize:12}}
-              placeholder={'{"Corona 1/2 L": 45, "Corona 1 L": 90}'}
-              value={form.preciosRaw||""} onChange={e=>setForm(p=>({...p,preciosRaw:e.target.value}))}/>
-          </div>
-          <button style={{...SA.btnVerde,width:"100%",padding:"13px 0",fontSize:15,marginTop:4}} onClick={guardar}>
-            💾 {editando?"Guardar cambios":"Crear producto"}
+
+          <button style={{...SA.btnVerde,width:"100%",padding:"14px 0",fontSize:15,marginTop:4}} onClick={guardar}>
+            {"💾 "+(editando?"Guardar cambios":"Crear producto")}
           </button>
         </div>
       )}
@@ -1512,6 +1680,10 @@ function AdminView({ menu, onUpdate }) {
 }
 
 const SA = {
+  bloque:{ background:"#1a1a1a",border:"1px solid #2e2e2e",borderRadius:12,padding:16,marginBottom:14 },
+  bloqueTitle:{ fontWeight:800,fontSize:13,color:"#E85D04",marginBottom:12,textTransform:"uppercase",letterSpacing:"0.5px" },
+  chipOpt:{ flex:1,padding:"8px 0",borderRadius:10,border:"1px solid #333",background:"#242424",color:"#aaa",fontWeight:600,fontSize:13,cursor:"pointer" },
+  chipOptOn:{ background:"#E85D04",border:"1px solid #E85D04",color:"#fff" },
   tabBtn:{ flex:1,padding:"10px 0",borderRadius:10,border:"1px solid #333",background:"#1A1A1A",color:"#888",fontWeight:700,fontSize:14,cursor:"pointer" },
   tabBtnOn:{ background:"#E85D04",border:"1px solid #E85D04",color:"#fff" },
   grupo:{ marginBottom:12 },
