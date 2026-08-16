@@ -412,39 +412,53 @@ function App() {
     showNotif(`✅ Pedido #${idDia} enviado a cocina`);
   }, [menu, sesion]);
 
-  // Al agregar items: los existentes conservan su estado, nuevos se marcan esNuevo:true
-  // Si los nuevos son SOLO bebidas → el pedido NO cambia de estado (se queda donde estaba)
-  // Si hay aunque sea UN platillo de comida → el pedido vuelve a pendientes para que cocina lo vea
+  // Productos que, aunque están clasificados como "comida" en el menú, no requieren
+  // preparación en cocina (se sirven directo): no deben regresar un pedido a Pendientes.
+  const NOMBRES_SIN_PREPARACION = ["Pan de Dulce","Pan Blanco","Pay","Flan"];
+  const requierePreparacion = (item, menuActual) => {
+    const nombreBase = (item.nombre||"").split(" (")[0].trim();
+    if (NOMBRES_SIN_PREPARACION.includes(nombreBase)) return false;
+    const datosMenu = menuActual[nombreBase];
+    if (datosMenu && datosMenu.categoria === "bebida") return false;
+    return true; // comida real (o producto desconocido: por seguridad se asume que sí)
+  };
+
+  // Reglas al agregar productos a un pedido ya existente:
+  // 1) Un producto recién agregado JAMÁS se marca como ya preparado/entregado, ni se oculta.
+  // 2) Los productos nuevos siempre se agregan AL FINAL de la lista (nunca se reordena lo existente).
+  // 3) Si el pedido está en Pendientes o En Proceso, se queda exactamente en esa misma columna
+  //    (agregar productos no lo mueve de lugar).
+  // 4) Solo si el pedido YA estaba Entregado/Cobrado (cerrado) y alguno de los productos nuevos
+  //    sí requiere preparación en cocina, el pedido regresa a Pendientes. Bebidas, pan blanco,
+  //    pan de dulce, pay o flan agregados a un pedido Entregado NO lo regresan a Pendientes.
   const agregarAlPedido = useCallback((id, pedidoActual, itemsNuevos) => {
-    const estabaEntregado = pedidoActual.estado === "entregado" || pedidoActual.estado === "cobrado";
+    const estadoActual   = pedidoActual.estado;
+    const yaCerrado       = estadoActual === "entregado" || estadoActual === "cobrado";
+    const hayQueRequierePrep = itemsNuevos.some(i => requierePreparacion(i, menu));
+    const debeVolverAPendiente = yaCerrado && hayQueRequierePrep;
+
     const itemsViejos = (pedidoActual.items||[]).map(i=>({
       ...i,
       esNuevo: false,
-      entregado: estabaEntregado ? true : i.entregado
+      // Si el pedido vuelve a pendientes, lo ya entregado se conserva marcado como tal
+      // (para que cocina solo vea como "por preparar" lo verdaderamente nuevo).
+      entregado: debeVolverAPendiente ? true : i.entregado
     }));
-    // Las bebidas se marcan esNuevo:false (ya listas, no van a cocina)
-    // La comida se marca esNuevo:true (necesita preparación)
-    const hayComida = itemsNuevos.some(i => {
-      const nombreBase = (i.nombre||"").split(" (")[0].trim();
-      const datosMenu  = menu[nombreBase];
-      return datosMenu ? datosMenu.categoria === "comida" : true; // si no está en menú, asumir comida
-    });
-    const itemsMarcados = itemsNuevos.map(i => {
-      const nombreBase = (i.nombre||"").split(" (")[0].trim();
-      const datosMenu  = menu[nombreBase];
-      const esBebida   = datosMenu ? datosMenu.categoria === "bebida" : false;
-      return { ...i, entregado: false, esNuevo: !esBebida }; // bebidas no van a cocina
-    });
-    const items = [...itemsViejos, ...itemsMarcados];
+    const itemsMarcados = itemsNuevos.map(i => ({
+      ...i,
+      entregado: false,                          // nunca se marca como ya preparado
+      esNuevo: requierePreparacion(i, menu)       // solo resalta/avisa a cocina si de verdad necesita prepararse
+    }));
+    const items = [...itemsViejos, ...itemsMarcados]; // los nuevos siempre van al final
     const total = items.reduce((s,i)=>s+(i.subtotal||0),0);
-    const nuevoEstado = hayComida ? "pendiente" : pedidoActual.estado;
+    const nuevoEstado = debeVolverAPendiente ? "pendiente" : estadoActual;
     const update = { items, total, estado: nuevoEstado,
       actualizado: new Date().toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"}) };
-    if (hayComida) update.ts = Date.now(); // encolar al final solo si hay comida
+    if (debeVolverAPendiente) update.ts = Date.now(); // solo reordenar si de verdad vuelve a pendientes
     db.ref(`pedidos/${id}`).update(update);
-    const msg = hayComida
-      ? "✅ Productos añadidos — comida encolada en pendientes"
-      : "✅ Bebidas añadidas — pedido se queda en su lugar";
+    const msg = debeVolverAPendiente
+      ? "✅ Productos añadidos — vuelve a pendientes para preparar"
+      : "✅ Productos añadidos al pedido";
     showNotif(msg);
   }, [menu]);
 
@@ -582,12 +596,16 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
     prevPendientesRef.current = pendientesIds;
   }, [pedidos, sesion, playNotifSound]);
 
-  const cols = [
+  // La columna "Cobrados" solo es visible para admin. Para los demás roles se quita del
+  // arreglo por completo: al usar auto-fit en el grid, el espacio se redistribuye solo
+  // entre las columnas restantes (no queda hueco vacío).
+  const colsBase = [
     { k:"pendiente",  l:"⏳ Pendientes", c:"#FFBA08", acc:[{l:"▶ Preparar",e:"en_proceso",c:"#3A86FF"}] },
     { k:"en_proceso", l:"👨‍🍳 En Proceso", c:"#3A86FF", acc:[{l:"🤝 Entregar",e:"entregado",c:"#888"}]    },
     { k:"entregado",  l:"🤝 Entregados",  c:"#888",    acc:[{l:"💰 Cobrado", e:"cobrado",  c:"#1D6F42"}] },
     { k:"cobrado",    l:"💰 Cobrados",    c:"#1D6F42", acc:[] },
   ];
+  const cols = sesion?.rol === "admin" ? colsBase : colsBase.filter(c => c.k !== "cobrado");
 
   const confirmarExtra = item => { setCarritoExtra(prev=>[...prev,item]); setProductoModal(null); };
   const confirmarAgregarAl = () => {
@@ -1063,14 +1081,14 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                             }
                           }}>{a.l}</button>
                       ))}
-                      {/* ➕ y ✏️ solo disponibles en pendiente y entregado, NO en proceso */}
+                      {/* ➕ agregar productos: disponible en pendiente, en_proceso y entregado.
+                          En en_proceso los nuevos solo se agregan al final, sin mover el pedido de columna. */}
+                      <button style={{...S.accBtn,background:"#9D4EDD"}}
+                        onClick={()=>{ setPedidoSelec(p); setCarritoExtra([]); }}>➕</button>
+                      {/* ✏️ editar/eliminar productos: NO disponible en en_proceso — ahí no se puede quitar nada */}
                       {col.k !== "en_proceso" && (
-                        <>
-                          <button style={{...S.accBtn,background:"#9D4EDD"}}
-                            onClick={()=>{ setPedidoSelec(p); setCarritoExtra([]); }}>➕</button>
-                          <button style={{...S.accBtn,background:"#3A86FF"}}
-                            onClick={()=>setModalEditar({ pedido:p, items: JSON.parse(JSON.stringify(p.items||[])) })}>✏️</button>
-                        </>
+                        <button style={{...S.accBtn,background:"#3A86FF"}}
+                          onClick={()=>setModalEditar({ pedido:p, items: JSON.parse(JSON.stringify(p.items||[])) })}>✏️</button>
                       )}
                       {col.k==="pendiente" && (
                         <button style={{...S.accBtn,background:"#EF233C"}} onClick={()=>setPedidoCancelar(p)}>✕</button>
