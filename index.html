@@ -289,10 +289,11 @@ function ModalProducto({ producto, nombre, onConfirmar, onCerrar, sinOverlay }) 
     d.personalizado ? nombreEspLimpio : null,
     variante,
     rellenos.length ? rellenos.join(" + ") : (esPlatilloRellenos(nombre) ? "Sin proteína" : nombre==="Gorditas" ? "Sin relleno" : null),
-    sinBase.length ? sinBase.map(b=>`Sin ${b.toLowerCase()}`).join(", ") : null,
+    // Solo se muestran los ingredientes que SÍ lleva (los quitados simplemente no aparecen)
+    ingredientes.filter(b=>!sinBase.includes(b)).length ? `Lleva: ${ingredientes.filter(b=>!sinBase.includes(b)).join(", ")}` : null,
     sabor,
-    extras.length ? extras.join(", ") : null,
-    nota||null
+    extras.length ? (d.categoria==="comida" ? `Extras: ${extras.join(", ")}` : extras.join(", ")) : null,
+    nota ? `Nota: ${nota}` : null
   ].filter(Boolean);
   const descripcion = `${nombre}${partes.length ? ` (${partes.join(" | ")})` : ""}`;
 
@@ -1046,9 +1047,28 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                           ? item.nombre.slice(item.nombre.indexOf("(")+1, item.nombre.lastIndexOf(")")).split("|").map(s=>s.trim())
                           : [];
                         const nombreBase = item.nombre.split(" (")[0].trim();
-                        // partes: [variante, rellenos, sabor, extras("Extra Queso, Cebolla..."), nota]
+                        // Detalle de preparación: Lleva / Sin / Extras / Nota (pedidos nuevos).
+                        // Pedidos viejos no traen estos prefijos y siguen mostrándose como antes.
+                        const detalle = {};
+                        const partesLinea = [];
+                        partes.forEach(pt => {
+                          if      (pt.startsWith("Lleva:"))  detalle.lleva  = pt.slice(6).trim();
+                          else if (pt.startsWith("Sin:"))    detalle.sin    = pt.slice(4).trim();
+                          else if (pt.startsWith("Extras:")) detalle.extras = pt.slice(7).trim().replace(/\s*\+\$\d+/g,"");
+                          else if (pt.startsWith("Nota:"))   detalle.nota   = pt.slice(5).trim();
+                          else partesLinea.push(pt);
+                        });
+                        const hayDetalle = detalle.lleva || detalle.extras || detalle.nota;
+                        const detalleEl = hayDetalle ? (
+                          <div style={{paddingLeft:32,fontSize:13,lineHeight:1.5,marginTop:2}}>
+                            {detalle.lleva  && <div style={{color:"#06D6A0"}}>✓ Lleva: {detalle.lleva}</div>}
+                            {detalle.extras && <div style={{color:"#FFBA08"}}>➕ Extras: {detalle.extras}</div>}
+                            {detalle.nota   && <div style={{color:"#aaa",fontStyle:"italic"}}>📝 {detalle.nota}</div>}
+                          </div>
+                        ) : null;
+                        // partesLinea: [variante, rellenos, sabor, ...] (+ formato anterior con extras/nota sueltos)
                         // Necesitamos separar Extra Queso del resto de complementos
-                        const todasPartes = partes.flatMap(p =>
+                        const todasPartes = partesLinea.flatMap(p =>
                           p.includes("Extra Queso") ? p.split(",").map(s=>s.trim()) : [p]
                         );
                         const tipo        = todasPartes[0] || null;
@@ -1069,6 +1089,7 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                                 <span style={{fontWeight:900,fontSize:16,color:"#E85D04",flexShrink:0}}>×{item.cantidad}</span>
                                 <span style={{fontWeight:600,fontSize:15,color:"#F0EBE3",flex:1,lineHeight:1.4}}>{lineaPrincipal}</span>
                               </div>
+                              {detalleEl}
                             </div>
                           );
                         }
@@ -1084,6 +1105,7 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                                 <span style={{fontWeight:900,fontSize:16,color:"#FFBA08",flexShrink:0}}>×{item.cantidad}</span>
                                 <span style={{fontWeight:600,fontSize:15,color:item.entregado?"#555":"#F0EBE3",flex:1,lineHeight:1.4}}>{lineaPrincipal}</span>
                               </div>
+                              {detalleEl}
                             </div>
                           );
                         }
@@ -1098,6 +1120,7 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                                 <button style={S.checkBtn} onClick={()=>onMarcarItem(p.id,p,todosItems.indexOf(item))}>✓</button>
                               )}
                             </div>
+                            {detalleEl}
                           </div>
                         );
                       };
