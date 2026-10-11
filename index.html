@@ -55,29 +55,38 @@ const PRECIO_EXTRA_QUESO = 5;
 const PRECIO_RELLENO_CHILAQUILES = 7; // proteína adicional (desde la 2da) = +$7
 // Chilaquiles: el precio base depende del 1er relleno elegido
 const PRECIO_CHILAQUILES_BASE = 60;                       // sin proteína
-const PRECIO_CHILAQUILES_PROTEINA = {Campechanos:65, Pollo:65, Huevo:65, Suadero:70 };
+const PRECIO_CHILAQUILES_PROTEINA = { Pollo:65, Huevo:65, Campechanos:65, Suadero:70 };
 const PRECIO_CHILAQUILES_POLLO_SUADERO = 75;              // precio fijo Pollo + Suadero (en cualquier orden)
 const PRECIO_CHILAQUILES_HUEVO_COMBO   = 6;               // Huevo junto con Pollo/Suadero: +$6
-const CHILAQUILES_BASE_INCLUYE = ["Queso","Crema","Cebolla"];                      // vienen incluidos, se pueden quitar
-const CHILAQUILES_EXTRAS = ["Extra Queso +$6","Extra Crema +$6","Extra Cebolla +$6"]; // +$6 c/u
+// Ingredientes que vienen incluidos por default en los platillos (el mesero los puede quitar).
+// Para agregar otro (ej. "Nopales"), basta con añadirlo aquí.
+const INGREDIENTES_BASE = ["Queso","Crema","Cebolla","Cilantro","Lechuga"];
+// Chilaquiles: ingredientes base + extras de pago (+$6 c/u)
+const CHILAQUILES_EXTRAS = ["Cebolla","Crema","Queso","Extra Queso +$6","Extra Crema +$6","Extra Cebolla +$6"];
 const PRECIO_EXTRA_CHILAQUILES = 6;                       // Extra Queso / Extra Crema
-const PRECIO_RELLENO_GORDITAS    = 5; // se cobra desde el 1er relleno
+// Gorditas: $30 sin relleno, $35 con relleno (Suadero/Longaniza/Chicharrón/Otro), +$6 por cada relleno adicional
+const PRECIO_GORDITAS_BASE         = 30;
+const PRECIO_GORDITAS_CON_RELLENO  = 35;
+const PRECIO_GORDITAS_REL_ADICIONAL = 6;
+const GORDITAS_RELLENOS = ["Suadero","Longaniza","Chicharrón","Otro"];
+const GORDITAS_EXTRAS   = ["Cilantro","Cebolla","Extra Queso +$5"]; // el queso solo como extra
 
 // ══════════════════════════════════════════════════════
 // MENÚ DEFAULT
 // ══════════════════════════════════════════════════════
 const MENU_DEFAULT = {
   "Chilaquiles":  { icon:"🍳", color:"#E85D04", categoria:"comida", precio:60,  variantes:["Verdes","Rojos"], rellenos:["Pollo","Suadero","Campechanos","Huevo"], extras:CHILAQUILES_EXTRAS, multiRelleno:true },
-  "Enchiladas":   { icon:"🧆", color:"#C1121F", categoria:"comida", precio:60,  variantes:["Verdes","Rojos"], rellenos:["Pollo","Suadero"], extras:["Cebolla","Crema","Queso","Extra Queso +$5"], multiRelleno:true },
+  "Enchiladas":   { icon:"🧆", color:"#C1121F", categoria:"comida", precio:60,  variantes:["Verdes","Rojos"], rellenos:["Pollo","Suadero"], extras:CHILAQUILES_EXTRAS, multiRelleno:true },
   "Tacos":        { icon:"🌮", color:"#F48C06", categoria:"comida", precio:30,  variantes:["Suadero","Longaniza","Campechanos","Mixtos"], extras:["Nopales","Papas","Cebolla","Cilantro","Extra Queso +$5"], unidad:"c/u" },
   "Pambazos":     { icon:"🥙", color:"#DC2F02", categoria:"comida", precio:30,  variantes:["Chicharrón","Queso","Tinga","Papa con Longaniza","Hongos","Suadero"], extras:["Lechuga","Crema","Queso","Extra Queso +$5"] },
   "Quesadillas":  { icon:"🌮", color:"#9D4EDD", categoria:"comida", precio:30,  variantes:["Chicharrón","Queso","Tinga","Papa con Longaniza","Hongos","Suadero"], extras:["Lechuga","Crema","Queso","Extra Queso +$5"] },
   "Huaraches":    { icon:"🌯", color:"#3A86FF", categoria:"comida", precio:40,  variantes:["Suadero","Longaniza","Campechanos","Otro"], extras:["Cebolla","Lechuga","Queso","Extra Queso +$5"] },
-  "Gorditas":     { icon:"🥮", color:"#06D6A0", categoria:"comida", precio:30,  variantes:["Suadero","Longaniza","Chicharrón","Queso","Otro"], extras:["Cilantro","Cebolla","Queso","Extra Queso +$5"] },
+  "Gorditas":     { icon:"🥮", color:"#06D6A0", categoria:"comida", precio:30,  rellenos:GORDITAS_RELLENOS, extras:GORDITAS_EXTRAS, multiRelleno:true },
   "Pancita":      { icon:"🍲", color:"#8B1A1A", categoria:"comida", variantes:["Grande","Chica"], precios:{"Grande":110,"Chica":85} },
   "Pozole":       { icon:"🍲", color:"#9B2226", categoria:"comida", variantes:["Grande","Chico"], precios:{"Grande":110,"Chico":85} },
   "Flan":     { icon:"", color:"#DC2F02", categoria:"comida", precio:30},
   "Pay":     { icon:"", color:"#DC2F02", categoria:"comida", precio:25},
+  "Platillo Especial": { icon:"⭐", color:"#FFD60A", categoria:"comida", personalizado:true },
   "Pan de Dulce": { icon:"🍩", color:"#C77DFF", categoria:"comida", precio:12 },
   "Pan Blanco":   { icon:"🍞", color:"#F5CBA7", categoria:"comida", precio:5  },
   "Agua":         { icon:"💧", color:"#00B4D8", categoria:"bebida", variantes:["1/2 L","1 L"], precios:{"1/2 L":25,"1 L":35} },
@@ -117,9 +126,10 @@ const precioBaseChilaquiles = (rellenos=[]) => {
   } else if (rellenos.includes("Pollo")) {
     total = PRECIO_CHILAQUILES_PROTEINA.Pollo;
     resto = rellenos.filter(r => r!=="Pollo");
-  } else if (rellenos.includes("Huevo")) {
-    total = PRECIO_CHILAQUILES_PROTEINA.Huevo;
-    resto = rellenos.filter(r => r!=="Huevo");
+  } else if (rellenos.includes("Huevo") || rellenos.includes("Campechanos")) {
+    const principal = rellenos.includes("Huevo") ? "Huevo" : "Campechanos";
+    total = PRECIO_CHILAQUILES_PROTEINA[principal];
+    resto = rellenos.filter(r => r!==principal);
   } else {
     total = PRECIO_CHILAQUILES_BASE;
     resto = rellenos.slice(1);
@@ -128,21 +138,20 @@ const precioBaseChilaquiles = (rellenos=[]) => {
   return total;
 };
 const cargoExtrasChilaquiles = (extras=[]) =>
-  extras.filter(e => e.includes("Extra Queso") || e.includes("Extra Crema")).length * PRECIO_EXTRA_CHILAQUILES;
+  extras.filter(e => e.includes("Extra Queso") || e.includes("Extra Crema") || e.includes("Extra Cebolla")).length * PRECIO_EXTRA_CHILAQUILES;
+// Chilaquiles y Enchiladas comparten esquema de precios (por rellenos)
+const esPlatilloRellenos = n => n === "Chilaquiles" || n === "Enchiladas";
+// Gorditas: 30 sin relleno; 35 con 1 relleno; +6 por cada relleno adicional
+const precioGorditas = (rellenos=[]) =>
+  rellenos.length === 0 ? PRECIO_GORDITAS_BASE
+  : PRECIO_GORDITAS_CON_RELLENO + (rellenos.length - 1) * PRECIO_GORDITAS_REL_ADICIONAL;
 const calcSubtotal = (precioBase, cantidad, extras=[], rellenos=[], nombreProducto="") => {
-  if (nombreProducto === "Chilaquiles") {
+  if (esPlatilloRellenos(nombreProducto)) {
     return (precioBaseChilaquiles(rellenos) + cargoExtrasChilaquiles(extras)) * cantidad;
   }
   const tieneExtraQueso = extras.some(e => e.includes("Extra Queso"));
-  let cargoRellenos = 0;
-  if (nombreProducto === "Chilaquiles") {
-    // 1er relleno gratis, cada adicional cuesta $6
-    cargoRellenos = Math.max(0, rellenos.length - 1) * PRECIO_RELLENO_CHILAQUILES;
-  } else if (nombreProducto === "Gorditas") {
-    // cada relleno cuesta $5
-    cargoRellenos = rellenos.length * PRECIO_RELLENO_GORDITAS;
-  }
-  return (precioBase + (tieneExtraQueso ? PRECIO_EXTRA_QUESO : 0) + cargoRellenos) * cantidad;
+  const base = nombreProducto === "Gorditas" ? precioGorditas(rellenos) : precioBase;
+  return (base + (tieneExtraQueso ? PRECIO_EXTRA_QUESO : 0)) * cantidad;
 };
 
 // Obtener el siguiente ID consecutivo del día desde Firebase
@@ -246,10 +255,17 @@ function ModalProducto({ producto, nombre, onConfirmar, onCerrar, sinOverlay }) 
   const d = producto;
   const [variante,  setVariante]  = useState(d.variantes?.[0] || null);
   // Chilaquiles (multiRelleno) permite selección múltiple de rellenos
-  const [rellenos,  setRellenos]  = useState(d.rellenos && nombre!=="Chilaquiles" ? [d.rellenos[0]] : []);
+  const [rellenos,  setRellenos]  = useState(d.rellenos && !(esPlatilloRellenos(nombre) || nombre==="Gorditas") ? [d.rellenos[0]] : []);
   const [sabor,     setSabor]     = useState(d.sabores?.[0] || null);
   const [extras,    setExtras]    = useState([]);
   const [sinBase,   setSinBase]   = useState([]); // ingredientes base que NO lleva (chilaquiles)
+  const [nombreEsp, setNombreEsp] = useState(""); // Platillo Especial: nombre libre
+  const [precioEsp, setPrecioEsp] = useState(""); // Platillo Especial: precio libre
+  // Ingredientes incluidos por default (solo comida); el resto de extras son opcionales
+  const ingredientes = d.categoria==="comida" ? (d.extras||[]).filter(e=>INGREDIENTES_BASE.includes(e)) : [];
+  const extrasOpc    = (d.extras||[]).filter(e=>!ingredientes.includes(e));
+  const nombreEspLimpio = nombreEsp.replace(/[()|]/g," ").replace(/\s+/g," ").trim();
+  const especialInvalido = !!d.personalizado && (!nombreEspLimpio || !(Number(precioEsp) > 0));
   const toggleBase = b => setSinBase(prev => prev.includes(b) ? prev.filter(x=>x!==b) : [...prev,b]);
   const [cantidad,  setCantidad]  = useState(1);
   const [nota,      setNota]      = useState("");
@@ -263,18 +279,17 @@ function ModalProducto({ producto, nombre, onConfirmar, onCerrar, sinOverlay }) 
     }
   };
 
-  const precioBase = nombre==="Chilaquiles" ? precioBaseChilaquiles(rellenos) : getPrecio(d, variante);
+  const precioBase = d.personalizado ? (Number(precioEsp)||0)
+                   : esPlatilloRellenos(nombre) ? precioBaseChilaquiles(rellenos)
+                   : nombre==="Gorditas" ? precioGorditas(rellenos) : getPrecio(d, variante);
   const subtotal   = calcSubtotal(precioBase, cantidad, extras, rellenos, nombre);
   // Cargo extra por rellenos para mostrarlo al usuario
-  const cargoRellenosExtra = nombre === "Chilaquiles"
-    ? 0 // ya incluido en el precio mostrado
-    : nombre === "Gorditas"
-    ? rellenos.length * PRECIO_RELLENO_GORDITAS
-    : 0;
+  const cargoRellenosExtra = 0; // los rellenos ya están incluidos en el precio mostrado
   const partes     = [
+    d.personalizado ? nombreEspLimpio : null,
     variante,
-    rellenos.length ? rellenos.join(" + ") : (nombre==="Chilaquiles" ? "Sin proteína" : null),
-    (nombre==="Chilaquiles" && sinBase.length) ? sinBase.map(b=>`Sin ${b.toLowerCase()}`).join(", ") : null,
+    rellenos.length ? rellenos.join(" + ") : (esPlatilloRellenos(nombre) ? "Sin proteína" : nombre==="Gorditas" ? "Sin relleno" : null),
+    sinBase.length ? sinBase.map(b=>`Sin ${b.toLowerCase()}`).join(", ") : null,
     sabor,
     extras.length ? extras.join(", ") : null,
     nota||null
@@ -290,7 +305,7 @@ function ModalProducto({ producto, nombre, onConfirmar, onCerrar, sinOverlay }) 
             <div style={{fontWeight:800,fontSize:17,color:"#F0EBE3"}}>{nombre}</div>
             <div style={{fontSize:13,color:"#E85D04",fontWeight:700}}>
               {fmt(precioBase)}{d.unidad?` ${d.unidad}`:""}
-              {nombre==="Chilaquiles"
+              {esPlatilloRellenos(nombre)
                 ? cargoExtrasChilaquiles(extras) > 0 && <span style={{color:"#FFBA08"}}> +${cargoExtrasChilaquiles(extras)} extras</span>
                 : extras.some(e=>e.includes("Extra Queso")) && <span style={{color:"#FFBA08"}}> +$5 queso</span>}
               {cargoRellenosExtra > 0 && <span style={{color:"#F4A261"}}> +${cargoRellenosExtra} rellenos</span>}
@@ -315,8 +330,8 @@ function ModalProducto({ producto, nombre, onConfirmar, onCerrar, sinOverlay }) 
             <div style={M.section}>
               <div style={M.sectionTitle}>
                 🥩 Relleno
-                {nombre==="Chilaquiles" && <span style={{fontSize:11,color:"#F4A261",fontWeight:500,marginLeft:6}}>(Sin proteína $60 · Pollo/Huevo $65 · Suadero $70 · Pollo+Suadero $75 · Huevo con otra +$6)</span>}
-                {nombre==="Gorditas"    && <span style={{fontSize:11,color:"#F4A261",fontWeight:500,marginLeft:6}}>(+$5 por relleno)</span>}
+                {esPlatilloRellenos(nombre) && <span style={{fontSize:11,color:"#F4A261",fontWeight:500,marginLeft:6}}>(Sin proteína $60 · Pollo/Huevo/Campechanos $65 · Suadero $70 · Pollo+Suadero $75 · Huevo con otra +$6)</span>}
+                {nombre==="Gorditas"    && <span style={{fontSize:11,color:"#F4A261",fontWeight:500,marginLeft:6}}>(Sin relleno $30 · con relleno $35 · +$6 por cada relleno adicional)</span>}
               </div>
               <div style={M.chipRow}>
                 {d.rellenos.map(r=>(
@@ -335,11 +350,18 @@ function ModalProducto({ producto, nombre, onConfirmar, onCerrar, sinOverlay }) 
               </div>
             </div>
           )}
-          {nombre==="Chilaquiles" && (
+          {d.personalizado && (
+            <div style={M.section}>
+              <div style={M.sectionTitle}>⭐ Platillo</div>
+              <input style={M.notaInput} placeholder="Nombre del platillo" value={nombreEsp} onChange={e=>setNombreEsp(e.target.value)}/>
+              <input style={{...M.notaInput,marginTop:8}} type="number" inputMode="decimal" min="0" placeholder="Precio $" value={precioEsp} onChange={e=>setPrecioEsp(e.target.value)}/>
+            </div>
+          )}
+          {ingredientes.length > 0 && (
             <div style={M.section}>
               <div style={M.sectionTitle}>🧀 Lleva de base <span style={{fontSize:11,color:"#888",fontWeight:400}}>(toca para quitar)</span></div>
               <div style={M.chipRow}>
-                {CHILAQUILES_BASE_INCLUYE.map(b=>(
+                {ingredientes.map(b=>(
                   <button key={b} style={{...M.chip,...(!sinBase.includes(b)?M.chipOn:{})}} onClick={()=>toggleBase(b)}>
                     {sinBase.includes(b) ? `Sin ${b.toLowerCase()}` : b}
                   </button>
@@ -347,11 +369,11 @@ function ModalProducto({ producto, nombre, onConfirmar, onCerrar, sinOverlay }) 
               </div>
             </div>
           )}
-          {d.extras && (
+          {extrasOpc.length > 0 && (
             <div style={M.section}>
               <div style={M.sectionTitle}>➕ Extras <span style={{fontSize:11,color:"#888",fontWeight:400}}>(selección múltiple)</span></div>
               <div style={M.chipRow}>
-                {d.extras.map(ex=>(
+                {extrasOpc.map(ex=>(
                   <button key={ex}
                     style={{...M.chip,...(extras.includes(ex)?M.chipOn:{}),...((ex.includes("Extra Queso")||ex.includes("Extra Crema"))?{borderColor:"#FFBA08"}:{})}}
                     onClick={()=>toggleExtra(ex)}>{ex}</button>
@@ -375,7 +397,7 @@ function ModalProducto({ producto, nombre, onConfirmar, onCerrar, sinOverlay }) 
         </div>
         <div style={M.footer}>
           <div style={{fontSize:12,color:"#666",marginBottom:8,lineHeight:1.5}}>{descripcion}</div>
-          <button style={M.confirmBtn} onClick={()=>onConfirmar({nombre:descripcion,cantidad,subtotal,icon:d.icon,entregado:false,esNuevo:false})}>
+          <button style={{...M.confirmBtn,...(especialInvalido?{opacity:0.4,cursor:"not-allowed"}:{})}} disabled={especialInvalido} onClick={()=>onConfirmar({nombre:descripcion,cantidad,subtotal,icon:d.icon,entregado:false,esNuevo:false})}>
             ✅ Agregar al pedido · {fmt(subtotal)}
           </button>
         </div>
@@ -432,6 +454,17 @@ function App() {
         if (val.Chilaquiles) {
           val.Chilaquiles = { ...val.Chilaquiles, precio:60, extras:CHILAQUILES_EXTRAS };
         }
+        // Enchiladas: mismo esquema que chilaquiles (se conservan sus rellenos)
+        if (val.Enchiladas) {
+          val.Enchiladas = { ...val.Enchiladas, precio:60, extras:CHILAQUILES_EXTRAS, multiRelleno:true };
+        }
+        // Gorditas: el "tipo" pasa a ser relleno múltiple; el queso queda solo como extra
+        if (val.Gorditas) {
+          const { variantes:_v, ...restoG } = val.Gorditas;
+          val.Gorditas = { ...restoG, precio:30, rellenos:GORDITAS_RELLENOS, extras:GORDITAS_EXTRAS, multiRelleno:true };
+        }
+        // Platillo Especial: asegurar que exista aunque el menú guardado sea anterior
+        if (!val["Platillo Especial"]) val["Platillo Especial"] = MENU_DEFAULT["Platillo Especial"];
         setMenu(val);
       } else db.ref("menu").set(MENU_DEFAULT);
     });
@@ -950,7 +983,7 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                     onClick={()=>setProductoModal({nombre,datos})}>
                     <div style={{fontSize:22}}>{datos.icon}</div>
                     <div style={{fontSize:12,fontWeight:700,marginTop:3}}>{nombre}</div>
-                    <div style={{fontSize:11,color:"#aaa"}}>{fmt(getPrecio(datos,datos.variantes?.[0]))}</div>
+                    <div style={{fontSize:11,color:"#aaa"}}>{datos.personalizado ? "Precio libre" : fmt(getPrecio(datos,datos.variantes?.[0]))}</div>
                   </button>
                 ))}
               </div>
@@ -1266,7 +1299,7 @@ function Pedido({ onAdd, menu, sesion }) {
             <div style={{fontSize:28}}>{d.icon}</div>
             <div style={{fontWeight:700,fontSize:13,margin:"5px 0 3px"}}>{n}</div>
             <div style={{fontSize:11,color:"#aaa"}}>
-              {d.precio?fmt(d.precio):d.precios?`desde ${fmt(Math.min(...Object.values(d.precios)))}`:""}{d.unidad?` ${d.unidad}`:""}
+              {d.personalizado?"Precio libre":d.precio?fmt(d.precio):d.precios?`desde ${fmt(Math.min(...Object.values(d.precios)))}`:""}{d.unidad?` ${d.unidad}`:""}
             </div>
           </button>
         ))}
