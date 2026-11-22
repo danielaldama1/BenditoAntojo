@@ -169,8 +169,8 @@ const getSiguienteId = async () => {
 // ══════════════════════════════════════════════════════
 // EXPORTAR EXCEL
 // ══════════════════════════════════════════════════════
-function exportarExcel(pedidos) {
-  const hoy = getTodayKey();
+function exportarExcel(pedidos, fecha) {
+  const hoy = fecha || getTodayKey();
   const pedidosHoy = pedidos.filter(p => p.fecha === hoy && p.estado !== "cancelado");
   const resumen = pedidosHoy.map(p => ({
     "ID": p.idDia ? `#${p.idDia}` : `#${String(p.ts||"").slice(-4)}`,
@@ -1345,30 +1345,127 @@ function Pedido({ onAdd, menu, sesion }) {
 // REPORTES
 // ══════════════════════════════════════════════════════
 function Reportes({ pedidos }) {
-  const hoy     = getTodayKey();
-  const validos = pedidos.filter(p=>p.estado!=="cancelado");
-  const hoyP    = validos.filter(p=>p.fecha===hoy);
+  const hoy = getTodayKey();
+  const [fecha,       setFecha]       = useState(hoy);
+  const [descargados, setDescargados] = useState([]);   // fechas ya descargadas en esta sesión
+  const [borrando,    setBorrando]    = useState(false);
+  const [msg,         setMsg]         = useState(null);
+
+  const validos   = pedidos.filter(p=>p.estado!=="cancelado");
+  const delDia    = pedidos.filter(p=>p.fecha===fecha);
+  const validosD  = delDia.filter(p=>p.estado!=="cancelado");
+  const cancelD   = delDia.length - validosD.length;
+  const totalDia  = validosD.reduce((s,p)=>s+(p.total||0),0);
+  const activos   = delDia.filter(p=>p.estado!=="cobrado" && p.estado!=="cancelado");
+
+  // Resumen por día (para elegir rápido qué día revisar / limpiar)
+  const porDia = {};
+  pedidos.forEach(p=>{
+    if (!p.fecha) return;
+    if (!porDia[p.fecha]) porDia[p.fecha] = { n:0, total:0 };
+    porDia[p.fecha].n += 1;
+    if (p.estado!=="cancelado") porDia[p.fecha].total += (p.total||0);
+  });
+  const diasConDatos = Object.keys(porDia).sort().reverse();
+
+  const fechaLarga = f => {
+    const [y,m,d] = (f||"").split("-").map(Number);
+    if (!y) return f;
+    return new Date(y,m-1,d).toLocaleDateString("es-MX",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  };
+  const fechaCorta = f => {
+    const [y,m,d] = (f||"").split("-").map(Number);
+    if (!y) return f;
+    return new Date(y,m-1,d).toLocaleDateString("es-MX",{day:"numeric",month:"short"});
+  };
+
+  const elegirFecha = f => { setFecha(f); setMsg(null); };
+
+  const descargar = () => {
+    if (!validosD.length) { setMsg({ok:false,t:"No hay ventas en ese día para descargar."}); return; }
+    exportarExcel(pedidos, fecha);
+    setDescargados(d => d.includes(fecha) ? d : [...d, fecha]);
+    setMsg({ok:true,t:`📥 Excel del ${fechaCorta(fecha)} descargado.`});
+  };
+
+  const eliminar = async () => {
+    if (!delDia.length) { setMsg({ok:false,t:"No hay pedidos en ese día para eliminar."}); return; }
+    let aviso = `¿Eliminar los ${delDia.length} pedido(s) del ${fechaLarga(fecha)} (${fmt(totalDia)} en ventas)?\n\nEsta acción NO se puede deshacer.`;
+    if (!descargados.includes(fecha)) aviso += "\n\n⚠️ Todavía no has descargado el Excel de este día.";
+    if (activos.length) aviso += `\n\n⚠️ Hay ${activos.length} pedido(s) sin cobrar que también desaparecerían del tablero.`;
+    if (!confirm(aviso)) return;
+    setBorrando(true);
+    try {
+      const updates = {};
+      delDia.forEach(p => { updates[p.id] = null; });
+      await db.ref("pedidos").update(updates);
+      // El contador del día solo se borra en días pasados (el de hoy se conserva para no repetir folios)
+      if (fecha !== hoy) await db.ref(`contadores/${fecha}`).remove();
+      setMsg({ok:true,t:`🗑️ Se eliminaron ${delDia.length} pedido(s) del ${fechaCorta(fecha)}.`});
+    } catch (e) {
+      setMsg({ok:false,t:"No se pudo eliminar: "+(e && e.message ? e.message : e)});
+    }
+    setBorrando(false);
+  };
+
+  const btn = (bg, off) => ({background:bg,color:"#fff",border:"none",borderRadius:10,padding:"10px 16px",fontWeight:700,fontSize:13,
+    cursor:off?"not-allowed":"pointer",opacity:off?0.5:1});
+
   return (
     <div style={S.rWrap}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10,marginBottom:16}}>
-        <h3 style={{color:"#E85D04",margin:0}}>📊 Reportes</h3>
-        <button style={{background:"#1D6F42",color:"#fff",border:"none",borderRadius:10,padding:"9px 16px",fontWeight:700,fontSize:13,cursor:"pointer"}}
-          onClick={()=>exportarExcel(pedidos)}>📥 Exportar Excel del día</button>
+      <h3 style={{color:"#E85D04",margin:"0 0 14px"}}>📊 Reportes</h3>
+
+      {/* Selector de día + acciones */}
+      <div style={{background:"#1A1A1A",border:"1px solid #333",borderRadius:12,padding:14,marginBottom:16}}>
+        <div style={{fontSize:12,color:"#aaa",marginBottom:6}}>📅 Elige el día</div>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap",alignItems:"center"}}>
+          <input type="date" value={fecha} max={hoy}
+            onChange={e=>e.target.value && elegirFecha(e.target.value)}
+            style={{background:"#111",color:"#fff",border:"1px solid #444",borderRadius:8,padding:"9px 12px",fontSize:15,colorScheme:"dark"}}/>
+          <button style={{...btn("#333"),border:"1px solid #555"}} onClick={()=>elegirFecha(hoy)}>Hoy</button>
+        </div>
+        <div style={{fontSize:13,color:"#ccc",margin:"10px 0 12px",textTransform:"capitalize"}}>{fechaLarga(fecha)}</div>
+        <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+          <button style={btn("#1D6F42",!validosD.length)} onClick={descargar}>📥 Descargar Excel de este día</button>
+          <button style={btn("#C1121F",!delDia.length||borrando)} disabled={borrando} onClick={eliminar}>
+            {borrando ? "Eliminando..." : "🗑️ Eliminar ventas de este día"}
+          </button>
+        </div>
+        {msg && <div style={{marginTop:10,fontSize:13,color:msg.ok?"#06D6A0":"#EF233C"}}>{msg.t}</div>}
       </div>
+
+      {/* Estadísticas del día elegido */}
       <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:20}}>
         {[
-          {n:fmt(hoyP.reduce((s,p)=>s+(p.total||0),0)),    l:"Ventas hoy"},
-          {n:fmt(validos.reduce((s,p)=>s+(p.total||0),0)), l:"Ventas totales"},
-          {n:hoyP.length,                                   l:"Pedidos hoy"},
-          {n:pedidos.filter(p=>p.estado==="cancelado"&&p.fecha===hoy).length, l:"Cancelados hoy"},
-        ].map((s,i)=>(
-          <div key={i} style={S.statCard}><div style={S.statNum}>{s.n}</div><div style={S.statLbl}>{s.l}</div></div>
+          {n:fmt(totalDia),                                         l:"Ventas del día"},
+          {n:validosD.length,                                       l:"Pedidos"},
+          {n:fmt(validosD.length?totalDia/validosD.length:0),       l:"Ticket promedio"},
+          {n:cancelD,                                               l:"Cancelados"},
+          {n:fmt(validos.reduce((s,p)=>s+(p.total||0),0)),          l:"Ventas totales"},
+        ].map((st,i)=>(
+          <div key={i} style={S.statCard}><div style={S.statNum}>{st.n}</div><div style={S.statLbl}>{st.l}</div></div>
         ))}
       </div>
-      <h4 style={{color:"#ccc",margin:"0 0 10px"}}>Últimos 30 pedidos</h4>
-      {pedidos.slice(0,30).map(p=>(
+
+      {/* Días con registros */}
+      <h4 style={{color:"#ccc",margin:"0 0 8px"}}>Días con registros ({diasConDatos.length})</h4>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:20}}>
+        {diasConDatos.length===0 && <span style={{color:"#777",fontSize:13}}>Todavía no hay pedidos guardados.</span>}
+        {diasConDatos.map(f=>(
+          <button key={f} onClick={()=>elegirFecha(f)}
+            style={{background:f===fecha?"#E85D04":"#242424",color:"#fff",border:"1px solid "+(f===fecha?"#E85D04":"#3a3a3a"),
+              borderRadius:10,padding:"7px 12px",fontSize:12,cursor:"pointer",textAlign:"left",lineHeight:1.4}}>
+            <b>{fechaCorta(f)}</b><br/>{porDia[f].n} pedido{porDia[f].n!==1?"s":""} · {fmt(porDia[f].total)}
+          </button>
+        ))}
+      </div>
+
+      {/* Pedidos del día elegido */}
+      <h4 style={{color:"#ccc",margin:"0 0 10px"}}>Pedidos del día ({delDia.length})</h4>
+      {delDia.length===0 && <div style={{color:"#777",fontSize:13}}>No hay pedidos en este día.</div>}
+      {delDia.map(p=>(
         <div key={p.id} style={{...S.card,marginBottom:6,fontSize:13}}>
-          <b>#{p.idDia||String(p.ts||"").slice(-4)}</b> — {p.mesa||"Sin mesa"} — {p.mesero?`👤 ${p.mesero} · `:""}{p.tipoServicio==="llevar"?"🥡 ":"🍽️ "}{p.fecha} {p.hora} — {fmt(p.total)} —{" "}
+          <b>#{p.idDia||String(p.ts||"").slice(-4)}</b> — {p.mesa||"Sin mesa"} — {p.mesero?`👤 ${p.mesero} · `:""}{p.tipoServicio==="llevar"?"🥡 ":"🍽️ "}{p.hora} — {fmt(p.total)} —{" "}
           <span style={{color:p.estado==="cancelado"?"#EF233C":p.estado==="cobrado"?"#1D6F42":"#06D6A0"}}>{p.estado}</span>
         </div>
       ))}
