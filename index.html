@@ -10,6 +10,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0F0F0F; }
@@ -1248,7 +1249,10 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                     </div>
                   )}
                   {esCobrado && (
-                    <div style={{fontSize:11,color:"#1D6F42",textAlign:"center",marginTop:6,fontWeight:700}}>✅ Pedido cerrado</div>
+                    <>
+                      <div style={{fontSize:11,color:"#1D6F42",textAlign:"center",marginTop:6,marginBottom:6,fontWeight:700}}>✅ Pedido cerrado</div>
+                      <BotonesCuentaPDF p={p}/>
+                    </>
                   )}
                 </div>
               );
@@ -1506,7 +1510,8 @@ function ModalDividir({ pedido, onClose, onFinalizar }) {
     const monto = montos[pi];
     const rec = billete==="" ? monto : parseFloat(billete);
     if (isNaN(rec) || rec < monto) return;
-    const np = {...pagadas, [pi]:{ monto, billete:rec, detalle:detalleTexto(pi) }};
+    const lineas = modo==="parejo" ? [] : detalles[pi].map(d=>({ nombre:d.nombre, monto:d.monto, compartido:d.compartido }));
+    const np = {...pagadas, [pi]:{ monto, billete:rec, detalle:detalleTexto(pi), lineas }};
     await guardar({ pagadas:np });
     setCobrando(null); setBillete("");
     const pendientes = montos.map((m,i)=>({m,i})).filter(x=>x.m>0 && x.i!==pi && !pagadas[x.i]);
@@ -1702,6 +1707,123 @@ function ModalDividir({ pedido, onClose, onFinalizar }) {
 }
 
 // ══════════════════════════════════════════════════════
+// CUENTA EN PDF (ticket para enviar al cliente)
+// ══════════════════════════════════════════════════════
+function generarCuentaPDF(pedido, persona) {
+  const jsPDF = window.jspdf && window.jspdf.jsPDF;
+  if (!jsPDF) { alert("No se pudo cargar el generador de PDF. Revisa tu conexión e intenta de nuevo."); return; }
+  const W = 80, MG = 5, ANCHO = W - 2*MG;
+  const limpiar = t => String(t==null ? "" : t).replace(/[^\u0020-\u00FF]/g,"").replace(/\s+/g," ").trim();
+  const money = n => `$${Number(n||0).toFixed(0)}`;
+  const folio = pedido.idDia ? `#${pedido.idDia}` : `#${String(pedido.ts||"").slice(-4)}`;
+  const fechaTxt = (pedido.fecha||"").split("-").reverse().join("/");
+  const pagos = (pedido.division && pedido.division.pagadas) ? pedido.division.pagadas : {};
+  const nPagos = Object.keys(pagos).length;
+  const individual = persona !== undefined && persona !== null && !!pagos[persona];
+
+  // Renglones y total
+  const lineas = [];
+  let total = pedido.total || 0;
+  if (individual) {
+    const pg = pagos[persona];
+    const ls = Array.isArray(pg.lineas) ? pg.lineas : (pg.lineas ? Object.values(pg.lineas) : []);
+    if (ls.length) ls.forEach(l => lineas.push({ izq: l.nombre + (l.compartido ? " (compartido)" : ""), der: money(l.monto) }));
+    else lineas.push({ izq: pg.detalle || "Consumo", der: "" });
+    total = pg.monto || 0;
+  } else {
+    (pedido.items||[]).forEach(it => {
+      const dt = detalleItem(it.nombre);
+      lineas.push({
+        izq: `${it.cantidad||1}x ${dt.base}${dt.tipo ? " "+dt.tipo : ""}${dt.relleno ? " "+dt.relleno : ""}`,
+        der: money(it.subtotal),
+        sub: dt.resto.join(", ")
+      });
+    });
+  }
+
+  const dibujar = doc => {
+    let y = 9;
+    const centro = (txt, size, bold) => { doc.setFont("helvetica", bold?"bold":"normal"); doc.setFontSize(size); doc.text(limpiar(txt), W/2, y, {align:"center"}); };
+    const raya = () => { doc.setDrawColor(150); doc.setLineWidth(0.2); doc.line(MG, y, W-MG, y); y += 4; };
+    centro("BENDITO ANTOJO", 15, true); y += 5;
+    centro(individual ? `Cuenta individual - Persona ${persona+1}` : "Comprobante de cuenta", 8, false); y += 4;
+    raya();
+    doc.setTextColor(0);
+    const filas = [
+      ["Folio", folio],
+      ["Fecha", `${fechaTxt}${pedido.hora ? "  " + pedido.hora : ""}`],
+      ["Mesa/Cliente", pedido.mesa || "Sin mesa"],
+      ["Atendio", pedido.mesero || ""],
+      ["Tipo", pedido.tipoServicio==="llevar" ? "Para llevar" : (pedido.tipoServicio ? "En sitio" : "")],
+    ].filter(f => limpiar(f[1]));
+    filas.forEach(([k,v]) => {
+      doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.text(k+":", MG, y);
+      doc.setFont("helvetica","normal");
+      const ls = doc.splitTextToSize(limpiar(v), ANCHO - 24);
+      doc.text(ls, MG+24, y);
+      y += Math.max(1, ls.length) * 3.8;
+    });
+    y += 1; raya();
+
+    lineas.forEach(l => {
+      doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(0);
+      const ls = doc.splitTextToSize(limpiar(l.izq), ANCHO - 14);
+      doc.text(ls, MG, y);
+      if (l.der) doc.text(l.der, W-MG, y, {align:"right"});
+      y += ls.length * 4;
+      if (l.sub) {
+        doc.setFontSize(7.5); doc.setTextColor(110);
+        const sl = doc.splitTextToSize(limpiar(l.sub), ANCHO - 4);
+        doc.text(sl, MG+2, y);
+        y += sl.length * 3.3;
+        doc.setTextColor(0);
+      }
+      y += 1.2;
+    });
+    raya();
+    doc.setFont("helvetica","bold"); doc.setFontSize(13); doc.setTextColor(0);
+    doc.text("TOTAL", MG, y); doc.text(money(total), W-MG, y, {align:"right"});
+    y += 7;
+    if (nPagos>0 && !individual) {
+      doc.setFont("helvetica","italic"); doc.setFontSize(7.5); doc.setTextColor(110);
+      const nt = doc.splitTextToSize(`Cuenta pagada por separado en ${nPagos} pago${nPagos!==1?"s":""}.`, ANCHO);
+      doc.text(nt, W/2, y, {align:"center"}); y += nt.length*3.4 + 2;
+    }
+    if (individual && pedido.division && pedido.division.modo==="parejo") {
+      doc.setFont("helvetica","italic"); doc.setFontSize(7.5); doc.setTextColor(110);
+      const nt = doc.splitTextToSize(`Total de la cuenta ${money(pedido.total)} dividido en partes iguales.`, ANCHO);
+      doc.text(nt, W/2, y, {align:"center"}); y += nt.length*3.4 + 2;
+    }
+    doc.setTextColor(0);
+    centro("PAGADO", 11, true); y += 5;
+    centro("Gracias por su visita", 8, false); y += 3;
+    return y;
+  };
+
+  // Primera pasada para medir la altura, segunda para el ticket final
+  const alto = dibujar(new jsPDF({ unit:"mm", format:[W, 1500] })) + 6;
+  const doc = new jsPDF({ unit:"mm", format:[W, Math.max(alto, 70)] });
+  dibujar(doc);
+  const mesaArch = (pedido.mesa || "sin-mesa").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z0-9_-]+/g,"-").replace(/^-+|-+$/g,"") || "sin-mesa";
+  doc.save(`Cuenta_${folio.replace("#","")}_${mesaArch}${individual ? "_Persona"+(persona+1) : ""}.pdf`);
+}
+
+// Botones para descargar la cuenta (completa y, si se dividió, la de cada persona)
+function BotonesCuentaPDF({ p }) {
+  const pagos = (p.division && p.division.pagadas) ? p.division.pagadas : {};
+  const ks = Object.keys(pagos).sort((a,b)=>a-b);
+  return (
+    <div style={{display:"flex",gap:5,flexWrap:"wrap",alignItems:"center"}}>
+      <button style={{...S.accBtn,flex:"0 0 auto",padding:"6px 10px",background:"#3A86FF"}} onClick={()=>generarCuentaPDF(p)}>📄 Cuenta PDF</button>
+      {ks.length>0 && <span style={{fontSize:10,color:"#888"}}>Individual:</span>}
+      {ks.map(k=>(
+        <button key={k} style={{...S.accBtn,flex:"0 0 auto",padding:"6px 9px",background:"#5C677D"}} onClick={()=>generarCuentaPDF(p,Number(k))}>P{Number(k)+1}</button>
+      ))}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════
 // REPORTES
 // ══════════════════════════════════════════════════════
 function Reportes({ pedidos }) {
@@ -1827,6 +1949,7 @@ function Reportes({ pedidos }) {
         <div key={p.id} style={{...S.card,marginBottom:6,fontSize:13}}>
           <b>#{p.idDia||String(p.ts||"").slice(-4)}</b> — {p.mesa||"Sin mesa"} — {p.mesero?`👤 ${p.mesero} · `:""}{p.tipoServicio==="llevar"?"🥡 ":"🍽️ "}{p.hora} — {fmt(p.total)} —{" "}
           <span style={{color:p.estado==="cancelado"?"#EF233C":p.estado==="cobrado"?"#1D6F42":"#06D6A0"}}>{p.estado}</span>
+          {p.estado==="cobrado" && <div style={{marginTop:6}}><BotonesCuentaPDF p={p}/></div>}
         </div>
       ))}
     </div>
