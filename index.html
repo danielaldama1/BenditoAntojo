@@ -768,6 +768,28 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                   <div style={{fontSize:36,fontWeight:900,color:"#1D6F42"}}>{fmt(total)}</div>
                 </div>
 
+                {/* Resumen de lo que se pidió */}
+                <div style={{marginBottom:16}}>
+                  <div style={{fontSize:12,color:"#888",fontWeight:700,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.4px"}}>Resumen del pedido</div>
+                  {(modalCobro.pedido.items||[]).map((it,i)=>{
+                    const dt = detalleItem(it.nombre);
+                    return (
+                      <div key={i} style={{display:"flex",gap:8,alignItems:"flex-start",padding:"8px 10px",marginBottom:6,borderRadius:10,background:"#242424",border:"1px solid #2e2e2e"}}>
+                        <span style={{fontSize:20,flexShrink:0}}>{it.icon}</span>
+                        <span style={{fontWeight:900,color:"#E85D04",flexShrink:0}}>×{it.cantidad}</span>
+                        <div style={{flex:1,lineHeight:1.4}}>
+                          <div style={{fontSize:15,fontWeight:700,color:"#F0EBE3"}}>
+                            {dt.base}{dt.tipo ? ` ${dt.tipo}` : ""}
+                            {dt.relleno && <span style={{color:"#FFBA08",fontWeight:800}}> {dt.relleno}</span>}
+                          </div>
+                          {dt.resto.length>0 && <div style={{fontSize:12,color:"#aaa"}}>{dt.resto.join(" · ")}</div>}
+                        </div>
+                        <span style={{fontWeight:700,color:"#ccc",flexShrink:0}}>{fmt(it.subtotal)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+
                 {/* Dividir cuenta entre varias personas */}
                 <button style={{width:"100%",marginBottom:16,padding:"12px 0",borderRadius:12,border:"2px solid #C77DFF",background:"rgba(199,125,255,0.1)",color:"#C77DFF",fontWeight:800,fontSize:14,cursor:"pointer"}}
                   onClick={()=>{ setModalDividir({ id: modalCobro.pedido.id }); setModalCobro(null); }}>
@@ -1385,7 +1407,20 @@ const repartirMonto = (monto, n) => {
   return arr;
 };
 const aArr = v => Array.isArray(v) ? v : (v ? Object.values(v) : []);
+// Desglosa la descripción de un producto: "Chilaquiles (Rojos | Suadero + Pollo | Sin cebolla)"
+const detalleItem = nombre => {
+  const base = (nombre||"").split(" (")[0].trim();
+  const partes = (nombre||"").includes("(")
+    ? nombre.slice(nombre.indexOf("(")+1, nombre.lastIndexOf(")")).split("|").map(x=>x.trim()).filter(Boolean)
+    : [];
+  if (esPlatilloRellenos(base) && partes.length>=2) {
+    return { base, tipo:partes[0], relleno: partes[1]==="Sin proteína" ? "sin proteína" : "de "+partes[1], resto:partes.slice(2) };
+  }
+  return { base, tipo:partes[0]||null, relleno:null, resto:partes.slice(1) };
+};
 const nombreCorto = nombre => {
+  const dt = detalleItem(nombre);
+  if (dt.relleno) return `${dt.base} ${dt.tipo} ${dt.relleno}`;
   const base = (nombre||"").split(" (")[0].trim();
   const resto = (nombre||"").includes("(") ? nombre.slice(nombre.indexOf("(")+1, nombre.lastIndexOf(")")).split("|")[0].trim() : "";
   return resto ? `${base} · ${resto}` : base;
