@@ -96,6 +96,7 @@ const MENU_DEFAULT = {
   "Limonada":     { icon:"🍋", color:"#F9C74F", categoria:"bebida", variantes:["Natural 1/2 L","Natural 1 L","Mineral 1/2 L","Mineral 1 L"], precios:{"Natural 1/2 L":35,"Natural 1 L":75,"Mineral 1/2 L":35,"Mineral 1 L":75} },
   "Michelada":    { icon:"🍺", color:"#FFBA08", categoria:"bebida", variantes:["Corona 1/2 L","Corona 1 L","Victoria 1/2 L","Victoria 1 L"], extras:["Clamato","Naranja","Tamarindo","Limón","Salsas","Todo","Solo Limón y Sal"], precios:{"Corona 1/2 L":45,"Corona 1 L":90,"Victoria 1/2 L":45,"Victoria 1 L":90} },
   "Mojito":       { icon:"🍹", color:"#40916C", categoria:"bebida", variantes:["Limón 1/2 L","Limón 1 L","Fresa 1/2 L","Fresa 1 L","Frutos Rojos 1/2 L","Frutos Rojos 1 L"], extras:["Escarchado","Doble"], precios:{"Limón 1/2 L":60,"Limón 1 L":100,"Fresa 1/2 L":60,"Fresa 1 L":100,"Frutos Rojos 1/2 L":70,"Frutos Rojos 1 L":120} },
+  "Cerveza de lata": { icon:"🍺", color:"#FFBA08", categoria:"bebida", precio:35 },
   "Caguama":      { icon:"🍻", color:"#B5830A", categoria:"bebida", variantes:["Corona","Victoria"], precios:{"Corona":55,"Victoria":55} },
   "Vasos":        { icon:"🥛", color:"#ADB5BD", categoria:"bebida", precio:1 },
    "Vaso escarchado":        { icon:"🥛", color:"#ADB5BD", categoria:"bebida", variantes:["normal","1/2","1L"], precios:{"normal":7,"1/2":14,"1L":20}},
@@ -289,11 +290,10 @@ function ModalProducto({ producto, nombre, onConfirmar, onCerrar, sinOverlay }) 
     d.personalizado ? nombreEspLimpio : null,
     variante,
     rellenos.length ? rellenos.join(" + ") : (esPlatilloRellenos(nombre) ? "Sin proteína" : nombre==="Gorditas" ? "Sin relleno" : null),
-    // Solo se muestran los ingredientes que SÍ lleva (los quitados simplemente no aparecen)
-    ingredientes.filter(b=>!sinBase.includes(b)).length ? `Lleva: ${ingredientes.filter(b=>!sinBase.includes(b)).join(", ")}` : null,
+    sinBase.length ? sinBase.map(b=>`Sin ${b.toLowerCase()}`).join(", ") : null,
     sabor,
-    extras.length ? (d.categoria==="comida" ? `Extras: ${extras.join(", ")}` : extras.join(", ")) : null,
-    nota ? `Nota: ${nota}` : null
+    extras.length ? extras.join(", ") : null,
+    nota||null
   ].filter(Boolean);
   const descripcion = `${nombre}${partes.length ? ` (${partes.join(" | ")})` : ""}`;
 
@@ -1030,10 +1030,10 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
               return (
                 <div key={p.id} style={{...S.card,...(p.actualizado&&!esCobrado?{border:"2px solid #E85D04"}:{})}}>
                   <div style={S.cardTop}>
-                    <span style={{fontWeight:800,fontSize:16}}>#{p.idDia || String(p.ts||"").slice(-4)}</span>
-                    <span style={{fontSize:15}}> — {p.mesa||"Sin mesa"}</span><br/>
+                    <span style={{fontWeight:800,fontSize:20}}>#{p.idDia || String(p.ts||"").slice(-4)}</span>
+                    <span style={{fontSize:20,fontWeight:700}}> — {p.mesa||"Sin mesa"}</span><br/>
                     <span style={{color:"#aaa",fontSize:14}}>{p.hora}{p.actualizado?` · act. ${p.actualizado}`:""} · {fmt(p.total)}</span><br/>
-                    {p.mesero && <span style={{color:"#FFBA08",fontSize:14}}>👤 {p.mesero}{p.tipoServicio ? ` · ${p.tipoServicio==="llevar"?"🥡 Para llevar":"🍽️ En sitio"}` : ""}</span>}
+                    {p.mesero && <span style={{color:"#FFBA08",fontSize:18,fontWeight:700}}>👤 {p.mesero}{p.tipoServicio ? ` · ${p.tipoServicio==="llevar"?"🥡 Para llevar":"🍽️ En sitio"}` : ""}</span>}
                   </div>
 
                   <div style={S.itemsList}>
@@ -1047,28 +1047,9 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                           ? item.nombre.slice(item.nombre.indexOf("(")+1, item.nombre.lastIndexOf(")")).split("|").map(s=>s.trim())
                           : [];
                         const nombreBase = item.nombre.split(" (")[0].trim();
-                        // Detalle de preparación: Lleva / Sin / Extras / Nota (pedidos nuevos).
-                        // Pedidos viejos no traen estos prefijos y siguen mostrándose como antes.
-                        const detalle = {};
-                        const partesLinea = [];
-                        partes.forEach(pt => {
-                          if      (pt.startsWith("Lleva:"))  detalle.lleva  = pt.slice(6).trim();
-                          else if (pt.startsWith("Sin:"))    detalle.sin    = pt.slice(4).trim();
-                          else if (pt.startsWith("Extras:")) detalle.extras = pt.slice(7).trim().replace(/\s*\+\$\d+/g,"");
-                          else if (pt.startsWith("Nota:"))   detalle.nota   = pt.slice(5).trim();
-                          else partesLinea.push(pt);
-                        });
-                        const hayDetalle = detalle.lleva || detalle.extras || detalle.nota;
-                        const detalleEl = hayDetalle ? (
-                          <div style={{paddingLeft:32,fontSize:13,lineHeight:1.5,marginTop:2}}>
-                            {detalle.lleva  && <div style={{color:"#06D6A0"}}>✓ Lleva: {detalle.lleva}</div>}
-                            {detalle.extras && <div style={{color:"#FFBA08"}}>➕ Extras: {detalle.extras}</div>}
-                            {detalle.nota   && <div style={{color:"#aaa",fontStyle:"italic"}}>📝 {detalle.nota}</div>}
-                          </div>
-                        ) : null;
-                        // partesLinea: [variante, rellenos, sabor, ...] (+ formato anterior con extras/nota sueltos)
+                        // partes: [variante, rellenos, sabor, extras("Extra Queso, Cebolla..."), nota]
                         // Necesitamos separar Extra Queso del resto de complementos
-                        const todasPartes = partesLinea.flatMap(p =>
+                        const todasPartes = partes.flatMap(p =>
                           p.includes("Extra Queso") ? p.split(",").map(s=>s.trim()) : [p]
                         );
                         const tipo        = todasPartes[0] || null;
@@ -1078,7 +1059,8 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                           .filter(p => p && p!==tipo && !p.includes("Extra Queso"))
                           .join(", ");
                         // Orden final: Nombre | Tipo | Extra Queso | complementos
-                        const lineaPrincipal = [nombreBase, tipo, extraQueso, complementos||null].filter(Boolean).join(" | ");
+                        const lineaPrincipal = [nombreBase, tipo].filter(Boolean).join(" | ");
+                        const lineaExtras = [extraQueso, complementos||null].filter(Boolean).join(", ");
 
                         if (esVistaLimpia) {
                           // Vista limpia: sin tachado, sin botones, todo visible
@@ -1087,9 +1069,8 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                               <div style={{display:"flex",alignItems:"center",gap:8}}>
                                 <span style={{fontSize:22,flexShrink:0}}>{item.icon}</span>
                                 <span style={{fontWeight:900,fontSize:16,color:"#E85D04",flexShrink:0}}>×{item.cantidad}</span>
-                                <span style={{fontWeight:600,fontSize:15,color:"#F0EBE3",flex:1,lineHeight:1.4}}>{lineaPrincipal}</span>
+                                <span style={{fontWeight:600,fontSize:15,color:"#F0EBE3",flex:1,lineHeight:1.4}}>{lineaPrincipal}{lineaExtras && <span style={{display:"block",fontSize:14,fontWeight:700,color:item.entregado?"#555":"#FF3B3B"}}>Lleva: {lineaExtras}</span>}</span>
                               </div>
-                              {detalleEl}
                             </div>
                           );
                         }
@@ -1103,9 +1084,8 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                               <div style={{display:"flex",alignItems:"center",gap:8}}>
                                 <span style={{fontSize:22,flexShrink:0}}>{item.icon}</span>
                                 <span style={{fontWeight:900,fontSize:16,color:"#FFBA08",flexShrink:0}}>×{item.cantidad}</span>
-                                <span style={{fontWeight:600,fontSize:15,color:item.entregado?"#555":"#F0EBE3",flex:1,lineHeight:1.4}}>{lineaPrincipal}</span>
+                                <span style={{fontWeight:600,fontSize:15,color:item.entregado?"#555":"#F0EBE3",flex:1,lineHeight:1.4}}>{lineaPrincipal}{lineaExtras && <span style={{display:"block",fontSize:14,fontWeight:700,color:item.entregado?"#555":"#FF3B3B"}}>Lleva: {lineaExtras}</span>}</span>
                               </div>
-                              {detalleEl}
                             </div>
                           );
                         }
@@ -1115,12 +1095,11 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                             <div style={{display:"flex",alignItems:"center",gap:8}}>
                               <span style={{fontSize:22,flexShrink:0}}>{item.icon}</span>
                               <span style={{fontWeight:900,fontSize:16,color:item.entregado?"#555":"#E85D04",flexShrink:0}}>×{item.cantidad}</span>
-                              <span style={{fontWeight:600,fontSize:15,color:item.entregado?"#555":"#F0EBE3",flex:1,lineHeight:1.4}}>{lineaPrincipal}</span>
+                              <span style={{fontWeight:600,fontSize:15,color:item.entregado?"#555":"#F0EBE3",flex:1,lineHeight:1.4}}>{lineaPrincipal}{lineaExtras && <span style={{display:"block",fontSize:14,fontWeight:700,color:item.entregado?"#555":"#FF3B3B"}}>Lleva: {lineaExtras}</span>}</span>
                               {col.k==="entregado" && !item.entregado && (
                                 <button style={S.checkBtn} onClick={()=>onMarcarItem(p.id,p,todosItems.indexOf(item))}>✓</button>
                               )}
                             </div>
-                            {detalleEl}
                           </div>
                         );
                       };
