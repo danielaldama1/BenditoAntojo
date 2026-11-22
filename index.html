@@ -55,7 +55,7 @@ const PRECIO_EXTRA_QUESO = 5;
 const PRECIO_RELLENO_CHILAQUILES = 7; // proteína adicional (desde la 2da) = +$7
 // Chilaquiles: el precio base depende del 1er relleno elegido
 const PRECIO_CHILAQUILES_BASE = 60;                       // sin proteína
-const PRECIO_CHILAQUILES_PROTEINA = { Pollo:65, Huevo:65, Campechanos:65, Suadero:70 };
+const PRECIO_CHILAQUILES_PROTEINA = { Pollo:65, Huevo:65, Campechanos:70, Suadero:70 };
 const PRECIO_CHILAQUILES_POLLO_SUADERO = 75;              // precio fijo Pollo + Suadero (en cualquier orden)
 const PRECIO_CHILAQUILES_HUEVO_COMBO   = 6;               // Huevo junto con Pollo/Suadero: +$6
 // Ingredientes que vienen incluidos por default en los platillos (el mesero los puede quitar).
@@ -87,7 +87,7 @@ const MENU_DEFAULT = {
   "Flan":     { icon:"", color:"#DC2F02", categoria:"comida", precio:30},
   "Pay":     { icon:"", color:"#DC2F02", categoria:"comida", precio:25},
   "Platillo Especial": { icon:"⭐", color:"#FFD60A", categoria:"comida", personalizado:true },
-  "Pan de Dulce": { icon:"🍩", color:"#C77DFF", categoria:"comida", precio:12 },
+  "Pan de Dulce": { icon:"🍩", color:"#C77DFF", categoria:"comida", precio:15 },
   "Pan Blanco":   { icon:"🍞", color:"#F5CBA7", categoria:"comida", precio:5  },
   "Agua":         { icon:"💧", color:"#00B4D8", categoria:"bebida", variantes:["1/2 L","1 L"], precios:{"1/2 L":25,"1 L":35} },
   "Café":         { icon:"☕", color:"#6F4E37", categoria:"bebida", variantes:["1/4 L","1/2 L","1 L"], extras:["Con leche","Sin azúcar","Con piloncillo"], precios:{"1/4 L":20,"1/2 L":37,"1 L":70} },
@@ -331,7 +331,7 @@ function ModalProducto({ producto, nombre, onConfirmar, onCerrar, sinOverlay }) 
             <div style={M.section}>
               <div style={M.sectionTitle}>
                 🥩 Relleno
-                {esPlatilloRellenos(nombre) && <span style={{fontSize:11,color:"#F4A261",fontWeight:500,marginLeft:6}}>(Sin proteína $60 · Pollo/Huevo/Campechanos $65 · Suadero $70 · Pollo+Suadero $75 · Huevo con otra +$6)</span>}
+                {esPlatilloRellenos(nombre) && <span style={{fontSize:11,color:"#F4A261",fontWeight:500,marginLeft:6}}>(Sin proteína $60 · Pollo/Huevo $65 · Suadero/Campechanos $70 · Pollo+Suadero $75 · Huevo con otra +$6)</span>}
                 {nombre==="Gorditas"    && <span style={{fontSize:11,color:"#F4A261",fontWeight:500,marginLeft:6}}>(Sin relleno $30 · con relleno $35 · +$6 por cada relleno adicional)</span>}
               </div>
               <div style={M.chipRow}>
@@ -466,6 +466,10 @@ function App() {
         }
         // Platillo Especial: asegurar que exista aunque el menú guardado sea anterior
         if (!val["Platillo Especial"]) val["Platillo Especial"] = MENU_DEFAULT["Platillo Especial"];
+        // Cerveza de lata: agregarla si el menú guardado es anterior
+        if (!val["Cerveza de lata"]) val["Cerveza de lata"] = MENU_DEFAULT["Cerveza de lata"];
+        // Pan de Dulce: precio actual $15
+        if (val["Pan de Dulce"]) val["Pan de Dulce"] = { ...val["Pan de Dulce"], precio:15 };
         setMenu(val);
       } else db.ref("menu").set(MENU_DEFAULT);
     });
