@@ -1069,7 +1069,7 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                               <div style={{display:"flex",alignItems:"center",gap:8}}>
                                 <span style={{fontSize:22,flexShrink:0}}>{item.icon}</span>
                                 <span style={{fontWeight:900,fontSize:16,color:"#E85D04",flexShrink:0}}>×{item.cantidad}</span>
-                                <span style={{fontWeight:600,fontSize:15,color:"#F0EBE3",flex:1,lineHeight:1.4}}>{lineaPrincipal}{lineaExtras && <span style={{display:"block",fontSize:14,fontWeight:700,color:item.entregado?"#555":"#FF3B3B"}}>Lleva: {lineaExtras}</span>}</span>
+                                <span style={{fontWeight:600,fontSize:15,color:"#F0EBE3",flex:1,lineHeight:1.4}}>{lineaPrincipal}{lineaExtras && <span style={{display:"block",fontSize:14,fontWeight:700,color:item.entregado?"#555":"#4DABF7"}}>Lleva: {lineaExtras}</span>}</span>
                               </div>
                             </div>
                           );
@@ -1084,7 +1084,7 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                               <div style={{display:"flex",alignItems:"center",gap:8}}>
                                 <span style={{fontSize:22,flexShrink:0}}>{item.icon}</span>
                                 <span style={{fontWeight:900,fontSize:16,color:"#FFBA08",flexShrink:0}}>×{item.cantidad}</span>
-                                <span style={{fontWeight:600,fontSize:15,color:item.entregado?"#555":"#F0EBE3",flex:1,lineHeight:1.4}}>{lineaPrincipal}{lineaExtras && <span style={{display:"block",fontSize:14,fontWeight:700,color:item.entregado?"#555":"#FF3B3B"}}>Lleva: {lineaExtras}</span>}</span>
+                                <span style={{fontWeight:600,fontSize:15,color:item.entregado?"#555":"#F0EBE3",flex:1,lineHeight:1.4}}>{lineaPrincipal}{lineaExtras && <span style={{display:"block",fontSize:14,fontWeight:700,color:item.entregado?"#555":"#4DABF7"}}>Lleva: {lineaExtras}</span>}</span>
                               </div>
                             </div>
                           );
@@ -1095,7 +1095,7 @@ function Central({ pedidos, onUpdate, onCancelar, onAgregarAl, onMarcarItem, onE
                             <div style={{display:"flex",alignItems:"center",gap:8}}>
                               <span style={{fontSize:22,flexShrink:0}}>{item.icon}</span>
                               <span style={{fontWeight:900,fontSize:16,color:item.entregado?"#555":"#E85D04",flexShrink:0}}>×{item.cantidad}</span>
-                              <span style={{fontWeight:600,fontSize:15,color:item.entregado?"#555":"#F0EBE3",flex:1,lineHeight:1.4}}>{lineaPrincipal}{lineaExtras && <span style={{display:"block",fontSize:14,fontWeight:700,color:item.entregado?"#555":"#FF3B3B"}}>Lleva: {lineaExtras}</span>}</span>
+                              <span style={{fontWeight:600,fontSize:15,color:item.entregado?"#555":"#F0EBE3",flex:1,lineHeight:1.4}}>{lineaPrincipal}{lineaExtras && <span style={{display:"block",fontSize:14,fontWeight:700,color:item.entregado?"#555":"#4DABF7"}}>Lleva: {lineaExtras}</span>}</span>
                               {col.k==="entregado" && !item.entregado && (
                                 <button style={S.checkBtn} onClick={()=>onMarcarItem(p.id,p,todosItems.indexOf(item))}>✓</button>
                               )}
