@@ -55,9 +55,9 @@ const PRECIO_EXTRA_QUESO = 5;
 // gorditas cobra $5 por cada relleno (desde el primero)
 const PRECIO_RELLENO_CHILAQUILES = 7; // proteína adicional (desde la 2da) = +$7
 // Chilaquiles: el precio base depende del 1er relleno elegido
-const PRECIO_CHILAQUILES_BASE = 60;                       // sin proteína
-const PRECIO_CHILAQUILES_PROTEINA = { Pollo:65, Huevo:65, Campechanos:70, Suadero:70 };
-const PRECIO_CHILAQUILES_POLLO_SUADERO = 75;              // precio fijo Pollo + Suadero (en cualquier orden)
+const PRECIO_CHILAQUILES_BASE = 65;                       // sin proteína
+const PRECIO_CHILAQUILES_PROTEINA = { Pollo:70, Huevo:70, Campechanos:75, Suadero:75 };
+const PRECIO_CHILAQUILES_POLLO_SUADERO = 80;              // precio fijo Pollo + Suadero (en cualquier orden)
 const PRECIO_CHILAQUILES_HUEVO_COMBO   = 6;               // Huevo junto con Pollo/Suadero: +$6
 // Ingredientes que vienen incluidos por default en los platillos (el mesero los puede quitar).
 // Para agregar otro (ej. "Nopales"), basta con añadirlo aquí.
@@ -76,12 +76,13 @@ const GORDITAS_EXTRAS   = ["Cilantro","Cebolla","Extra Queso +$5"]; // el queso 
 // MENÚ DEFAULT
 // ══════════════════════════════════════════════════════
 const MENU_DEFAULT = {
-  "Chilaquiles":  { icon:"🍳", color:"#E85D04", categoria:"comida", precio:60,  variantes:["Verdes","Rojos"], rellenos:["Pollo","Suadero","Campechanos","Huevo"], extras:CHILAQUILES_EXTRAS, multiRelleno:true },
-  "Enchiladas":   { icon:"🧆", color:"#C1121F", categoria:"comida", precio:60,  variantes:["Verdes","Rojos"], rellenos:["Pollo","Suadero"], extras:CHILAQUILES_EXTRAS, multiRelleno:true },
-  "Tacos":        { icon:"🌮", color:"#F48C06", categoria:"comida", precio:30,  variantes:["Suadero","Longaniza","Campechanos","Mixtos"], extras:["Nopales","Papas","Cebolla","Cilantro","Extra Queso +$5"], unidad:"c/u" },
-  "Pambazos":     { icon:"🥙", color:"#DC2F02", categoria:"comida", precio:30,  variantes:["Chicharrón","Queso","Tinga","Papa con Longaniza","Hongos","Suadero"], extras:["Lechuga","Crema","Queso","Extra Queso +$5"] },
-  "Quesadillas":  { icon:"🌮", color:"#9D4EDD", categoria:"comida", precio:30,  variantes:["Chicharrón","Queso","Tinga","Papa con Longaniza","Hongos","Suadero"], extras:["Lechuga","Crema","Queso","Extra Queso +$5"] },
-  "Huaraches":    { icon:"🌯", color:"#3A86FF", categoria:"comida", precio:40,  variantes:["Suadero","Longaniza","Campechanos","Otro"], extras:["Cebolla","Lechuga","Queso","Extra Queso +$5"] },
+  "Chilaquiles":  { icon:"🍳", color:"#E85D04", categoria:"comida", precio:65,  variantes:["Verdes","Rojos"], rellenos:["Pollo","Suadero","Campechanos","Huevo"], extras:CHILAQUILES_EXTRAS, multiRelleno:true },
+  "Enchiladas":   { icon:"🧆", color:"#C1121F", categoria:"comida", precio:65,  variantes:["Verdes","Rojos"], rellenos:["Pollo","Suadero"], extras:CHILAQUILES_EXTRAS, multiRelleno:true },
+  "Tacos":        { icon:"🌮", color:"#F48C06", categoria:"comida", precio:35,  variantes:["Suadero","Longaniza","Campechanos","Mixtos"], extras:["Nopales","Papas","Cebolla","Cilantro","Extra Queso +$5"], unidad:"c/u" },
+  "Pambazos":     { icon:"🥙", color:"#DC2F02", categoria:"comida", precio:35,  variantes:["Chicharrón","Queso","Tinga","Papa con Longaniza","Hongos","Suadero"], extras:["Lechuga","Crema","Queso","Extra Queso +$5"] },
+  "Quesadillas":  { icon:"🌮", color:"#9D4EDD", categoria:"comida", precio:35,  variantes:["Chicharrón","Queso","Tinga","Papa con Longaniza","Hongos","Suadero"], extras:["Lechuga","Crema","Queso","Extra Queso +$5"] },
+  "Huaraches":    { icon:"🌯", color:"#3A86FF", categoria:"comida", precio:45,  variantes:["Suadero","Longaniza","Campechanos","Otro"], extras:["Cebolla","Lechuga","Queso","Extra Queso +$5"] },
+  "Tostadas":     { icon:"🥗", color:"#2D6A4F", categoria:"comida", precio:55, unidad:"por 3 piezas" },
   "Gorditas":     { icon:"🥮", color:"#06D6A0", categoria:"comida", precio:30,  rellenos:GORDITAS_RELLENOS, extras:GORDITAS_EXTRAS, multiRelleno:true },
   "Pancita":      { icon:"🍲", color:"#8B1A1A", categoria:"comida", variantes:["Grande","Chica"], precios:{"Grande":110,"Chica":85} },
   "Pozole":       { icon:"🍲", color:"#9B2226", categoria:"comida", variantes:["Grande","Chico"], precios:{"Grande":110,"Chico":85} },
@@ -90,18 +91,24 @@ const MENU_DEFAULT = {
   "Platillo Especial": { icon:"⭐", color:"#FFD60A", categoria:"comida", personalizado:true },
   "Pan de Dulce": { icon:"🍩", color:"#C77DFF", categoria:"comida", precio:15 },
   "Pan Blanco":   { icon:"🍞", color:"#F5CBA7", categoria:"comida", precio:5  },
-  "Agua":         { icon:"💧", color:"#00B4D8", categoria:"bebida", variantes:["1/2 L","1 L"], precios:{"1/2 L":25,"1 L":35} },
-  "Café":         { icon:"☕", color:"#6F4E37", categoria:"bebida", variantes:["1/4 L","1/2 L","1 L"], extras:["Con leche","Sin azúcar","Con piloncillo"], precios:{"1/4 L":20,"1/2 L":37,"1 L":70} },
-  "Atole":        { icon:"🥛", color:"#F4A261", categoria:"bebida", variantes:["1/4 L","1/2 L","1 L"], sabores:["Chocolate","Guayaba","Fresa","Vainilla"], precios:{"1/4 L":25,"1/2 L":45,"1 L":85} },
-  "Refresco":     { icon:"🥤", color:"#EF233C", categoria:"bebida", variantes:["Coca-Cola","Boing","Otro"], precios:{"Coca-Cola":30,"Boing":30,"Otro":30} },
-  "Limonada":     { icon:"🍋", color:"#F9C74F", categoria:"bebida", variantes:["Natural 1/2 L","Natural 1 L","Mineral 1/2 L","Mineral 1 L"], precios:{"Natural 1/2 L":35,"Natural 1 L":75,"Mineral 1/2 L":35,"Mineral 1 L":75} },
-  "Michelada":    { icon:"🍺", color:"#FFBA08", categoria:"bebida", variantes:["Corona 1/2 L","Corona 1 L","Victoria 1/2 L","Victoria 1 L"], extras:["Clamato","Naranja","Tamarindo","Limón","Salsas","Todo","Solo Limón y Sal"], precios:{"Corona 1/2 L":45,"Corona 1 L":90,"Victoria 1/2 L":45,"Victoria 1 L":90} },
-  "Mojito":       { icon:"🍹", color:"#40916C", categoria:"bebida", variantes:["Limón 1/2 L","Limón 1 L","Fresa 1/2 L","Fresa 1 L","Frutos Rojos 1/2 L","Frutos Rojos 1 L"], extras:["Escarchado","Doble"], precios:{"Limón 1/2 L":60,"Limón 1 L":100,"Fresa 1/2 L":60,"Fresa 1 L":100,"Frutos Rojos 1/2 L":70,"Frutos Rojos 1 L":120} },
+  "Agua de sabor": { icon:"💧", color:"#00B4D8", categoria:"bebida", variantes:["Chica","Grande"], precios:{"Chica":30,"Grande":40} },
+  "Café":         { icon:"☕", color:"#6F4E37", categoria:"bebida", variantes:["Vaso chico","Vaso grande"], extras:["Con leche","Sin azúcar","Con piloncillo"], precios:{"Vaso chico":20,"Vaso grande":37} },
+  "Atole":        { icon:"🥛", color:"#F4A261", categoria:"bebida", variantes:["Vaso chico","Vaso grande"], sabores:["Chocolate","Guayaba","Fresa","Vainilla"], precios:{"Vaso chico":30,"Vaso grande":55} },
+  "Refresco":     { icon:"🥤", color:"#EF233C", categoria:"bebida", variantes:["Coca-Cola","Boing","Otro"], precios:{"Coca-Cola":35,"Boing":35,"Otro":35} },
+  "Limonada":     { icon:"🍋", color:"#F9C74F", categoria:"bebida", variantes:["Chica","Grande"], sabores:["Natural","Mineral"], precios:{"Chica":35,"Grande":45} },
+  "Michelada":    { icon:"🍺", color:"#FFBA08", categoria:"bebida", variantes:["Chica","Grande"], extras:["Clamato","Naranja","Tamarindo","Limón","Salsas","Todo","Solo Limón y Sal"], precios:{"Chica":50,"Grande":100} },
+  "Mojito":       { icon:"🍹", color:"#40916C", categoria:"bebida", variantes:["Chica","Grande"], sabores:["Limón","Fresa","Frutos Rojos"], extras:["Escarchado","Doble"], precios:{"Chica":60,"Grande":120} },
   "Cerveza de lata": { icon:"🍺", color:"#FFBA08", categoria:"bebida", precio:35 },
   "Caguama":      { icon:"🍻", color:"#B5830A", categoria:"bebida", variantes:["Corona","Victoria"], precios:{"Corona":55,"Victoria":55} },
   "Vasos":        { icon:"🥛", color:"#ADB5BD", categoria:"bebida", precio:1 },
    "Vaso escarchado":        { icon:"🥛", color:"#ADB5BD", categoria:"bebida", variantes:["normal","1/2","1L"], precios:{"normal":7,"1/2":14,"1L":20}},
 };
+// Carta nueva (nov 2026): al abrir la app se actualiza UNA sola vez el menú guardado en Firebase.
+// Solo se reemplazan estos productos; el resto del menú (y lo que agregues desde Admin) se conserva.
+const MENU_VERSION = "2026-11-carta-nueva";
+const MENU_CAMBIOS = ["Chilaquiles","Enchiladas","Tacos","Pambazos","Quesadillas","Huaraches","Tostadas",
+                      "Agua de sabor","Café","Atole","Refresco","Limonada","Michelada","Mojito"];
+
 // ══════════════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════════════
@@ -348,7 +355,7 @@ function ModalProducto({ producto, nombre, onConfirmar, onCerrar, sinOverlay }) 
             <div style={M.section}>
               <div style={M.sectionTitle}>
                 🥩 Relleno
-                {esPlatilloRellenos(nombre) && <span style={{fontSize:11,color:"#F4A261",fontWeight:500,marginLeft:6}}>(Sin proteína $60 · Pollo/Huevo $65 · Suadero/Campechanos $70 · Pollo+Suadero $75 · Huevo con otra +$6)</span>}
+                {esPlatilloRellenos(nombre) && <span style={{fontSize:11,color:"#F4A261",fontWeight:500,marginLeft:6}}>(Sin proteína $65 · Pollo/Huevo $70 · Suadero/Campechanos $75 · Pollo+Suadero $80 · Huevo con otra +$6)</span>}
                 {nombre==="Gorditas"    && <span style={{fontSize:11,color:"#F4A261",fontWeight:500,marginLeft:6}}>(Sin relleno $30 · con relleno $35 · +$6 por cada relleno adicional)</span>}
               </div>
               <div style={M.chipRow}>
@@ -465,16 +472,24 @@ function App() {
 
   useEffect(() => {
     db.ref("pedidos").on("value", snap => setPedidos(snap.val() || {}));
+    db.ref("menuVersion").once("value").then(async vsnap => {
+      if (vsnap.val() === MENU_VERSION) return;
+      const msnap = await db.ref("menu").once("value");
+      const nuevo = msnap.exists() ? { ...msnap.val() } : { ...MENU_DEFAULT };
+      delete nuevo["Agua"]; // ahora es "Agua de sabor"
+      MENU_CAMBIOS.forEach(n => { nuevo[n] = MENU_DEFAULT[n]; });
+      await db.ref().update({ menu: nuevo, menuVersion: MENU_VERSION });
+    }).catch(e => console.warn("No se pudo actualizar el menú:", e));
     db.ref("menu").on("value", snap => {
       const val = snap.val();
       if (val) {
         // Chilaquiles: forzar extras al esquema actual (+$6 queso/crema/cebolla extra)
         if (val.Chilaquiles) {
-          val.Chilaquiles = { ...val.Chilaquiles, precio:60, extras:CHILAQUILES_EXTRAS };
+          val.Chilaquiles = { ...val.Chilaquiles, precio:65, extras:CHILAQUILES_EXTRAS };
         }
         // Enchiladas: mismo esquema que chilaquiles (se conservan sus rellenos)
         if (val.Enchiladas) {
-          val.Enchiladas = { ...val.Enchiladas, precio:60, extras:CHILAQUILES_EXTRAS, multiRelleno:true };
+          val.Enchiladas = { ...val.Enchiladas, precio:65, extras:CHILAQUILES_EXTRAS, multiRelleno:true };
         }
         // Gorditas: el "tipo" pasa a ser relleno múltiple; el queso queda solo como extra
         if (val.Gorditas) {
@@ -496,7 +511,7 @@ function App() {
   const showNotif = msg => { setNotif(msg); setTimeout(()=>setNotif(null),2800); };
 
   // Orden fijo del ticket: comidas primero (orden específico), bebidas al final
-  const ORDEN_COMIDA = ["Quesadillas","Pambazos","Gorditas","Enchiladas","Tacos","Huaraches","Chilaquiles","Pan de Dulce","Pan Blanco"];
+  const ORDEN_COMIDA = ["Quesadillas","Pambazos","Gorditas","Enchiladas","Tacos","Tostadas","Huaraches","Chilaquiles","Pan de Dulce","Pan Blanco"];
   const ordenarItems = (items, menuActual) => {
     const getPrioridad = item => {
       const nombreBase = item.nombre.split(" (")[0].trim();
